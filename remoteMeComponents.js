@@ -783,7 +783,7 @@ function getOnConnectionChange(cnt,icon){
 			icon.animateCss("zoomOut");
 		}else if (status==ConnectingStatusEnum.FAILED){
 			cnt.addClass("failed");
-			icon.animateCss("shake",true);
+			icon.animateCss("shake");
 		}else if (status==ConnectingStatusEnum.DISCONNECTING){
 			cnt.addClass("disconnecting");
 			icon.animateCss("pulseMore",true);

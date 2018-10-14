@@ -916,22 +916,33 @@ class RemoteMe {
 
 
 		RemoteMeRest_getLocalWebSocketServers(data=>{
-			console.info(data);
+
 			//console.info(this);
 			data.forEach(device=>{
-				this.onDirectConnectionChange(device.deviceId,ConnectingStatusEnum.CONNECTING);
-				this.directWebSocket[device.deviceId] = new WebSocket(`ws://${device.localIP}:${device.port}`);
-				this.directWebSocket[device.deviceId].binaryType = "arraybuffer";
-				this.directWebSocket[device.deviceId].onmessage =  (event)=>{
-					console.info(`direct message got`);
-					this.onMessageWS(event);
-				};
-				this.directWebSocket[device.deviceId].variables=device.variables;
-				this.directWebSocket[device.deviceId].deviceId=device.deviceId;
+				try{
+					this.onDirectConnectionChange(device.deviceId,ConnectingStatusEnum.CONNECTING);
+					this.directWebSocket[device.deviceId] = new WebSocket(`ws://${device.localIP}:${device.port}`);
+					this.directWebSocket[device.deviceId].binaryType = "arraybuffer";
+					this.directWebSocket[device.deviceId].onmessage =  (event)=>{
+						console.info(`direct message got`);
+						this.onMessageWS(event);
+					};
+					this.directWebSocket[device.deviceId].variables=device.variables;
+					this.directWebSocket[device.deviceId].deviceId=device.deviceId;
 
-				this.directWebSocket[device.deviceId].onopen = (event)=>this.onOpenDirectConnection(device.deviceId,event);
-				this.directWebSocket[device.deviceId].onerror = (event)=>this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.FAILED);
-				this.directWebSocket[device.deviceId].onclose = (event)=>this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.DISCONNECTED);
+					this.directWebSocket[device.deviceId].onopen = (event)=>this.onOpenDirectConnection(device.deviceId,event);
+					this.directWebSocket[device.deviceId].onerror = (event)=>this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.FAILED);
+					this.directWebSocket[device.deviceId].onclose = (event)=>this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.DISCONNECTED);
+				}catch (e) {
+					if (location.protocol != 'http:' && e.contains("secure")){
+						if (window.confirm("Arduino doesnt support WSS connection and webbrowser will not connect from https.\nYou can at your browser allow to load unsafe content \nClick ok to  redirecting to http. ")){
+							location.href = 'http:' + window.location.href.substring(window.location.protocol.length);
+							return;
+						}
+						this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.FAILED);
+					}
+				}
+
 			});
 
 
