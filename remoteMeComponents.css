@@ -1,0 +1,263 @@
+/* Bootstrap Toggle v2.2.2 corrections for Bootsrtap 4*/
+
+
+.color-badge{
+    border: 1px solid white;
+    display: inherit;
+    width: 22px;
+    height: 22px;
+    position: relative;
+    left: -4px;
+    border-radius: 22px;
+    top: 6px;
+
+}
+.mdl-radio{
+    margin-right: 25px;
+}
+
+.color-badge-parent{
+    position:relative;
+}
+
+.box{
+
+    display: block;
+    border-collapse: collapse;
+    border-spacing: 0;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+    border: none;
+    border-radius: 2px;
+    position: relative;
+    min-width: 64px;
+    letter-spacing: 0;
+    overflow: hidden;
+    will-change: box-shadow;
+    outline: none;
+    text-decoration: none;
+    line-height: 36px;
+    vertical-align: middle;
+    padding: 15px;
+}
+
+.noBorder{
+    box-shadow: none !important;
+}
+
+
+.box p{
+    margin: 0px;
+    padding: 0px;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.textWithApply{
+    padding-right:20px;
+}
+.textWithApply .material-icons{
+    pointer-events: all;
+    text-align: right;
+    cursor: pointer;
+    right: 0;
+    left: auto;
+    width: auto;
+    color: green;
+    font-size: 17pt;
+
+
+    bottom: 0;
+    position: absolute;
+    display: block;
+    top: 24px;
+    overflow: hidden;
+    white-space: nowrap;
+
+
+}
+.textWithApply  .material-icons {
+    visibility: visible;
+}
+.textWithApply.is-invalid  .material-icons {
+    visibility: hidden;
+}
+.textWithApply.disabled  .material-icons {
+    visibility: hidden;
+}
+
+
+.getmdl-select.disabled .mdl-icon-toggle__label{
+    visibility: hidden;
+}
+.getmdl-select.disabled .mdl-textfield__input {
+    cursor: inherit;
+}
+/*
+.mdl-textfield {
+    width: 100%;
+}
+.mdl-button{
+    width: 100%;
+}
+*/
+
+
+
+.steerParent{
+    position: relative;
+    margin-left:10px;
+    border-radius: 50px;
+    border: 1px solid gray;
+
+    width: calc( 100vmin  - 20px);
+    height: calc( 100vmin  - 20px);
+
+}
+
+.steerParent .steer {
+    position: relative;
+    opacity: 0.5;
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+    border: 1px solid gray;
+    top: calc(50% - 25px);
+    left: calc(50% - 25px);
+}
+.steerParent .text {
+    position: absolute;
+    top: 10px;
+    left: 25px;
+    font-size: 25pt;
+    font-family: Consolas,monaco,monospace;
+}
+
+
+.steerParent.active{
+    position:relative;
+
+    background: rgba(210,255,82,50);
+}
+
+.steerParent.active .steer{
+    background-color: rgba(255, 2, 0, 0.64);
+
+}
+
+.statusIcons{
+    position:absolute;
+    top:0px;
+    right:0px;
+    padding:5px;
+    z-index: 9999;
+}
+
+.statusIcons div {
+   padding-right:5px;
+   display:inline;
+}
+
+.statusIcons div.connecting{
+    color: #00e4ff;
+}
+.statusIcons div.connected{
+    color: #00c900;
+}
+
+.statusIcons div.disconnected{
+    color: #c4b996;
+}
+
+.statusIcons div.failed{
+    color: #c40b00;
+}
+
+.statusIcons div.checking{
+    color: #000cc4;
+}
+ .statusIcons div.disconnecting{
+     color: #5c5c5c;
+ }
+
+.statusIcons div i{
+  cursor: pointer;
+}
+@-webkit-keyframes pulseMore {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.25, 1.25, 1.25);
+        transform: scale3d(1.25, 1.25, 1.25);
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+@keyframes pulseMore {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.25, 1.25, 1.25);
+        transform: scale3d(1.25, 1.25, 1.25);
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+.pulseMore {
+    -webkit-animation-name: pulseMore;
+    animation-name: pulseMore;
+}
+@keyframes rubberBandMore {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+
+    30% {
+        -webkit-transform: scale3d(1.35, 0.65, 1);
+        transform: scale3d(1.35, 0.65, 1);
+    }
+
+    40% {
+        -webkit-transform: scale3d(0.65, 1.35, 1);
+        transform: scale3d(0.65, 1.35, 1);
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.25, 0.75, 1);
+        transform: scale3d(1.15, 0.75, 1);
+    }
+
+    65% {
+        -webkit-transform: scale3d(0.85, 1.15, 1);
+        transform: scale3d(0.85, 1.15, 1);
+    }
+
+    75% {
+        -webkit-transform: scale3d(1.05, 0.95, 1);
+        transform: scale3d(1.05, 0.95, 1);
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+.rubberBandMore {
+    -webkit-animation-name: rubberBandMore;
+    animation-name: rubberBandMore;
+}

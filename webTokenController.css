@@ -1,0 +1,55 @@
+div.creditTimeCointainer{
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	margin:4px;
+	padding:6px;
+	background-color: #ffffff80;
+	border-radius: 4px 4px;
+	border:1px solid lightslategray;
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+
+}
+div.creditTimeCointainer p{
+	display:inline;
+}
+div.creditTimeCointainer div{
+	marign:0px;
+}
+div.creditTimeCointainer div.exitButton{
+	width:100%;
+	background-color: coral;
+	cursor:pointer;
+	border-radius: 4px 4px;
+	padding:4px;
+	text-align: center;
+}
+
+div.creditTimeCointainer .value{
+	color: #4267b2;
+	font-weight: bold;
+
+	padding-left:8px;
+	float:right;
+	margin: 0px;
+}
+
+
+div.creditTimeCointainer .label{
+	margin: 0px;
+
+
+ }
+
+div.creditTimeCointainer .end{
+clear: both;
+	margin: 0px;
+
+
+}
