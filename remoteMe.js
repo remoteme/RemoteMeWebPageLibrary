@@ -934,7 +934,7 @@ class RemoteMe {
 					this.directWebSocket[device.deviceId].onerror = (event)=>this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.FAILED);
 					this.directWebSocket[device.deviceId].onclose = (event)=>this.onDirectConnectionChange(device.deviceId, ConnectingStatusEnum.DISCONNECTED);
 				}catch (e) {
-					if (location.protocol != 'http:' && e.contains("secure")){
+					if (location.protocol != 'http:' ){
 						if (window.confirm("Arduino doesnt support WSS connection and webbrowser will not connect from https.\nYou can at your browser allow to load unsafe content \nClick ok to  redirecting to http. ")){
 							location.href = 'http:' + window.location.href.substring(window.location.protocol.length);
 							return;
