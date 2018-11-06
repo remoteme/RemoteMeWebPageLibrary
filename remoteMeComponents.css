@@ -261,3 +261,14 @@
     -webkit-animation-name: rubberBandMore;
     animation-name: rubberBandMore;
 }
+
+.daterangepicker .drp-buttons .btn{
+    margin-left: 8px;
+     font-size: inherit !important;
+     font-weight: inherit !important;
+    padding: 0 20px !important;
+}
+
+.daterangepicker{
+    font-family: inherit !important;
+}

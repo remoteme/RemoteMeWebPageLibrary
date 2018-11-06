@@ -932,3 +932,29 @@ $( document ).ready(function() {
 
 });
 
+function addDatePickerForChart(id,date1,date2,onSet){
+	$(`#${id}`).daterangepicker({
+		startDate:date1,
+		endDate:date2,
+
+		ranges: {
+			'Today': [moment(), moment()],
+			'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+			'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+			'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+			'This Month': [moment().startOf('month'), moment().endOf('month')],
+			'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		},
+		applyButtonClasses: "mdl-button mdl-js-button mdl-button--raised mdl-button--colored",
+		cancelClass: "mdl-button mdl-js-button",
+		opens: 'left',
+		drops: 'up',
+		locale: {
+			format: 'DD.MM.YYYY'
+		}
+	}, function(start, end, label) {
+		onSet(start.format('DD.MM.YYYY'),end.format('DD.MM.YYYY'));
+	});
+
+	onSet(date1,date2);
+}
