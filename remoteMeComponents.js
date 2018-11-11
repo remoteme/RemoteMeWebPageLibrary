@@ -730,8 +730,7 @@ function addTextField(selector,variableType) {
 
 
 	remoteme.getVariables().observe(prop.name,variableType,x=>{
-		textField[0].MaterialTextfield.change(x);
-		textField.removeClass("is-upgraded");
+		input.val(x).parent().addClass('is-focused');
 	});
 
 
