@@ -932,6 +932,7 @@ $( document ).ready(function() {
 
 });
 
+
 function addDatePickerForChart(id,date1,date2,onSet){
 	$(`#${id}`).daterangepicker({
 		startDate:date1,
