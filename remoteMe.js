@@ -993,7 +993,7 @@ class RemoteMe {
 
 	onWebSocketConnectionChange(status/*:ConnectingStatusEnum*/){
 		console.info(`onWebSocketConnectionChange  ${status}`);
-		if (typeof this.remoteMeConfig.directConnectionChange=='function'){
+		if (typeof this.remoteMeConfig.webSocketConnectionChange=='function'){
 			this.remoteMeConfig.webSocketConnectionChange(status);
 		}else {
 			this.remoteMeConfig.webSocketConnectionChange.forEach(f => f(status));
