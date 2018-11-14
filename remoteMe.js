@@ -1002,8 +1002,8 @@ class RemoteMe {
 
 	onWebRtcConnectionChange(status/*:ConnectingStatusEnum*/){
 		if (raspberryPiDeviceId!=undefined) {
-			console.info(`onWebRtcConnectionChange ${deviceId}`);
-			if (typeof this.remoteMeConfig.directConnectionChange=='function'){
+			console.info(`onWebRtcConnectionChange ${thisDeviceId}`);
+			if (typeof this.remoteMeConfig.webRTCConnectionChange=='function'){
 				this.remoteMeConfig.webRTCConnectionChange(status);
 			}else {
 				this.remoteMeConfig.webRTCConnectionChange.forEach(f => f(status));
