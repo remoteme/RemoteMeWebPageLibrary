@@ -1,3 +1,11 @@
+/* Enum: ConnectingStatusEnum
+   CONNECTED - Causes the counter to increment normally.
+   DISCONNECTED    - Causes the counter to only increment in odd numbers.
+   FAILED   - Causes the counter to only increment in even numbers.
+   CONNECTING   - Causes the counter to only increment in even numbers.
+   DISCONNECTING   - Causes the counter to only increment in even numbers.
+   CHECKING   - Causes the counter to only increment in even numbers.
+*/
 ConnectingStatusEnum = {
 	CONNECTED: 0,
 	DISCONNECTED: 1,
@@ -7,10 +15,58 @@ ConnectingStatusEnum = {
 	CHECKING: 5
 };
 
+/*
+ Class: RemoteMeConfiguration
+ // Initial configuration for remoteMe class
+ Default settings:
+ --- Code
+ {
+	automaticlyConnectWS: true,
+	automaticlyConnectWebRTC: false,
+	webSocketConnectionChange: [],
+	directConnectionChange: [],
+	webRtcConnectionChange: [],
+	onUserMessage: undefined,
+	onUserSyncMessage: undefined,
+	pcConfig: {"iceServers": [{"urls": "stun:stun.l.google.com:19302"}]},
+	pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
+	mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}}
+};
+---
+  */
 
+class RemoteMeConfiguration{
+	// Property: automaticlyConnectWS
+	// *true* or false, if Websocket connection wiht app.remoteMe.org should be made automaticly
+	automaticlyConnectWS;
+	// Property: automaticlyConnectWebRTC
+	// true or *false*, if Websocket connection wiht app.remoteMe.org should be made automaticly
+	automaticlyConnectWebRTC;
+	// Property: webSocketConnectionChange
+	// array of functions which will be called when websocketConnection will be changed
+	// functions should be one parameter ts called with <ConnectingStatusEnum> parameter
+	webSocketConnectionChange;
+	directConnectionChange;
+	webRtcConnectionChange;
+	onUserMessage;
+	onUserSyncMessage;
+	pcConfig;
+	pcOptions;
+	mediaConstraints;
+}
 
+// Class: RemoteMe
+// A Main class to communicate with remoteMe system
 class RemoteMe {
 
+	/*
+	Constructor: RemoteMe
+	Initializes RemoteMe object based on given configuration
+
+	Parameters:
+	config - initial Configuration <RemoteMeConfiguration> can be empty then default configration will be used
+
+	*/
 	constructor(config = undefined) {
 		if (RemoteMe.thiz !=undefined){
 			console.error("Remoteme tried to construct more then once");
@@ -68,7 +124,6 @@ class RemoteMe {
 	getVariables(){
 		if (this.variables==undefined){
 			this.variables = new Variables(this);
-			console.info(">>>>>>>>>>>>>");
 		}
 		return this.variables;
 	}
@@ -235,6 +290,7 @@ class RemoteMe {
 	sendWebRTCConnectionStatusChangeMessage(webPageDeviceId,rasbperryPiDeviceId,status){
 		this.sendWebSocket(getWebRTCConnectionStatusChangeMessage(webPageDeviceId, rasbperryPiDeviceId, status));
 	}
+
 	sendWebSocketText(text) {
 		if (this.isWebSocketConnected()) {
 			this.webSocket.send(text);
@@ -253,10 +309,6 @@ class RemoteMe {
 		}
 
 	}
-
-
-
-
 
 
 
