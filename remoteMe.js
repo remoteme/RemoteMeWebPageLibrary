@@ -34,6 +34,7 @@ ConnectingStatusEnum = {
 };
 ---
   */
+/*
 
 class RemoteMeConfiguration{
 	// Property: automaticlyConnectWS
@@ -54,6 +55,7 @@ class RemoteMeConfiguration{
 	pcOptions;
 	mediaConstraints;
 }
+*/
 
 // Class: RemoteMe
 // A Main class to communicate with remoteMe system
