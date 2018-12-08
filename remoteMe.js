@@ -982,6 +982,16 @@ class RemoteMe {
 						this.onMessageWS(event);
 					};
 					this.directWebSocket[device.deviceId].variables=device.variables;
+
+
+					for (var i = 0; i < this.directWebSocket[device.deviceId].variables.length; i++) {
+						var type = this.directWebSocket[device.deviceId].variables[i].type;
+						if (isNaN( type) ){
+							type=VariableOberverType[type];
+						}
+						this.directWebSocket[device.deviceId].variables[i].type= parseInt(type);
+					}
+
 					this.directWebSocket[device.deviceId].deviceId=device.deviceId;
 
 					this.directWebSocket[device.deviceId].onopen = (event)=>this.onOpenDirectConnection(device.deviceId,event);
