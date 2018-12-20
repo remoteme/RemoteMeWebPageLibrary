@@ -61,6 +61,15 @@ class RemoteMeConfiguration{
 // A Main class to communicate with remoteMe system
 class RemoteMe {
 
+	static getInstance(){
+		if (RemoteMe.thiz==undefined){
+			new RemoteMe();
+		}
+
+		return RemoteMe.thiz;
+
+	}
+
 	/*
 	Constructor: RemoteMe
 	Initializes RemoteMe object based on given configuration
@@ -162,7 +171,7 @@ class RemoteMe {
 
 	connectWebSocket() {
 		this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTING);
-		this.log("connectiong WS");
+
 		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
 		this.webSocket.binaryType = "arraybuffer";
 		this.webSocket.onopen = ((event)=>{
@@ -846,6 +855,17 @@ class RemoteMe {
 	}
 
 
+	afterWebSocketConneced(toCall){
+		if (this.isWebSocketConnected()){
+			setTimeout(toCall);
+		}else{
+			this.remoteMeConfig.webSocketConnectionChange.push(x=>{
+				if (x==ConnectingStatusEnum.CONNECTED){
+					toCall();
+				}
+			});
+		}
+	}
 
 	sendUserMessageWebsocket(receiveDeviceId, data) {
 		this.sendWebSocket(getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data));
@@ -910,19 +930,15 @@ class RemoteMe {
 
 
 
-	sendVariablesChangeDirect(variables,payload){
+	sendVariablesChangeDirect(variables,payload) {
 
-		this.directWebSocket.forEach(webSocket=> {
-			var contains=0;
+		this.directWebSocket.forEach(webSocket => {
+			var contains = 0;
 
-			if (this.hasCommon(variables,webSocket.variables)){
-				this.sendDirectWebsocket(webSocket.deviceId,payload);
+			if (this.hasCommon(variables, webSocket.variables)) {
+				this.sendDirectWebsocket(webSocket.deviceId, payload);
 			}
-
-
 		});
-
-
 	}
 
 	sendDirectWebsocket(receiveDeviceId, toSend) {
@@ -1037,7 +1053,6 @@ class RemoteMe {
 			ret.push(	device.deviceId);
 
 		});
-		console.info(ret);
 		return ret;
 	}
 
@@ -1056,7 +1071,7 @@ class RemoteMe {
 	}
 
 	onWebSocketConnectionChange(status/*:ConnectingStatusEnum*/){
-		console.info(`onWebSocketConnectionChange  ${status}`);
+
 		if (typeof this.remoteMeConfig.webSocketConnectionChange=='function'){
 			this.remoteMeConfig.webSocketConnectionChange(status);
 		}else {

@@ -739,6 +739,42 @@ function addTextField(selector,variableType) {
 
 }
 
+
+function addDiv(selector,variableType) {
+
+
+	var prop = readProperties(selector);
+
+	var label;
+
+
+
+
+	var template="{value}";
+
+
+	if ($(selector).attr( "template" )!=undefined){
+		template=$(selector).attr( "template" );
+	}
+
+
+	var text=template.replace("{value}","...");
+	text=text.replace("{name}",prop.name);
+
+
+	var div = $(`<div>${text}</div>`);
+
+	remoteme.getVariables().observe(prop.name,variableType,x=>{
+		var text=template.replace("{value}",x);
+		text=text.replace("{name}",prop.name);
+
+		div.html(text);
+	});
+
+	replaceComponent(selector,div);
+
+}
+
 function addJoystick(selector){
 
 	var prop=readProperties(selector);
@@ -900,6 +936,15 @@ function replace(){
 			addTextField(variable,VariableOberverType.TEXT);
 		}else if ($(variable).attr( "type" ) =="DOUBLE" && $(variable).attr( "component" ) =="textField"){
 			addTextField(variable,VariableOberverType.DOUBLE);
+		}
+
+
+		else if ($(variable).attr( "type" ) =="INTEGER" && $(variable).attr( "component" ) =="div"){
+			addDiv(variable,VariableOberverType.INTEGER);
+		}else if ($(variable).attr( "type" ) =="TEXT" && $(variable).attr( "component" ) =="div"){
+			addDiv(variable,VariableOberverType.TEXT);
+		}else if ($(variable).attr( "type" ) =="DOUBLE" && $(variable).attr( "component" ) =="div"){
+			addDiv(variable,VariableOberverType.DOUBLE);
 		}
 
 		else if ($(variable).attr( "type" ) =="SMALL_INTEGER_3" && $(variable).attr( "component" ) =="color"){
