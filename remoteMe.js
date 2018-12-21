@@ -168,8 +168,12 @@ class RemoteMe {
 
 	}
 
-
 	connectWebSocket() {
+		setTimeout(()=>this._connectWebSocketNow(),300);//so everything is registered and ready
+	}
+
+	_connectWebSocketNow() {
+		console.info((this instanceof RemoteMe)+"<<<");
 		this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTING);
 
 		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
@@ -865,6 +869,7 @@ class RemoteMe {
 				}
 			});
 		}
+
 	}
 
 	sendUserMessageWebsocket(receiveDeviceId, data) {
@@ -1072,11 +1077,20 @@ class RemoteMe {
 
 	onWebSocketConnectionChange(status/*:ConnectingStatusEnum*/){
 
-		if (typeof this.remoteMeConfig.webSocketConnectionChange=='function'){
-			this.remoteMeConfig.webSocketConnectionChange(status);
-		}else {
-			this.remoteMeConfig.webSocketConnectionChange.forEach(f => f(status));
-		}
+		setTimeout(()=>{
+			if (status==ConnectingStatusEnum.CONNECTED && this.variables!=undefined){
+				this.getVariables().resendObserve();
+			}
+
+			if (typeof this.remoteMeConfig.webSocketConnectionChange=='function'){
+				this.remoteMeConfig.webSocketConnectionChange(status);
+			}else {
+				this.remoteMeConfig.webSocketConnectionChange.forEach(f => f(status));
+			}
+		});
+
+
+
 	}
 
 	onWebRtcConnectionChange(status/*:ConnectingStatusEnum*/){

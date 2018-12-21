@@ -1,10 +1,9 @@
+
 class ToSend {
 	constructor() {
 		this.type = 0;
 		this.name = "";
 		this.values = [];
-
-
 	}
 
 	getSize() {
@@ -144,7 +143,7 @@ class Variables {
 		for (var i = 0; i < dataSize; i++) {
 			var type = remoteMeData.popUint16();
 			var name = remoteMeData.popString();
-			var toCalls = this.observables[name + type];
+			var toCalls = this.observables[name +"_"+ type];
 
 
 			if (toCalls != undefined) {
@@ -332,32 +331,57 @@ class Variables {
 
 	observe(name, type, onChange) {
 
-		var size = 2 + 2 + 2 + name.length + 1;
 
 
-		var ret = new RemoteMeData(4 + size);
+		if (this.observables[name+"_"+ type] == undefined) {
 
-		ret.putShort(MessageType.OBSERVER_REGISTER_MESSAGE);
-		ret.putShort(size);
-		ret.putShort(thisDeviceId);
-		ret.putShort(1);
-		ret.putShort(type);
-		ret.putString(name);
-
-
-		if (this.remoteMe.isWebSocketConnected()) {
-			this.remoteMe.sendWebSocket(ret);
-		} else {
-			this.remoteMe.sendRest(ret);
+			this.observables[name+"_"+ type] = [];
 		}
+		this.observables[name +"_"+ type].push(onChange);
 
-		if (this.observables[name + type] == undefined) {
-			this.observables[name + type] = [];
-		}
-
-		this.observables[name + type].push(onChange);
+		this.sendObserve([{name:name,type:type}]);
 	}
 
+	sendObserve(variableIdentifiers){
+		if (this.remoteMe.isWebSocketConnected()) {
+			var size = 2 + 2  ;
+
+
+			for (let i = 0; i < variableIdentifiers.length; i++) {
+				size+=2;
+				size+=getArray(variableIdentifiers[i].name).length;
+				size++;
+
+			}
+			var ret = new RemoteMeData(4 + size);
+
+			ret.putShort(MessageType.OBSERVER_REGISTER_MESSAGE);
+			ret.putShort(size);
+			ret.putShort(thisDeviceId);
+			ret.putShort(variableIdentifiers.length);
+
+			for (let i = 0; i < variableIdentifiers.length; i++) {
+
+				ret.putShort(variableIdentifiers[i].type);
+				ret.putString(variableIdentifiers[i].name);
+
+			}
+
+			this.remoteMe.sendWebSocket(ret);
+		}
+	}
+
+	resendObserve(){
+		let toSend=[];
+		for(var key in this.observables){
+			var name = key.substring(0, key.lastIndexOf("_") );
+			var type = parseInt(key.substring(key.lastIndexOf("_") + 1, key.length));
+			toSend.push({name:name,type:type});
+		}
+
+		this.sendObserve(toSend);
+
+	}
 
 }
 
