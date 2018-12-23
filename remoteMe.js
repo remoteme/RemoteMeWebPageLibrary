@@ -297,10 +297,23 @@ class RemoteMe {
 		var messageId = Math.floor(Math.random() * 1000000000);
 		RemoteMe.thiz.messageUserSyncIdToFunction[messageId] = responseFunction;
 		this.sendWebSocket(getUserSyncMessage(receiveDeviceId, thisDeviceId, data, messageId));
-
-
 	}
 
+	sendUserSyncMessageByFasterChannel(receiveDeviceId, data,responseFunction) {
+		if (receiveDeviceId >= 0) {
+			if (this.isWebSocketConnected()){
+				this.sendUserSyncMessageWebSocket(receiveDeviceId, data,responseFunction);
+			}else {
+				this.sendUserSyncMessageRest(receiveDeviceId, data,responseFunction);
+			}
+		} else {
+			console.error("Cannot send message to deviceId with this id, did You configure your script correct ?");
+		}
+	}
+
+	sendUserSyncMessage(receiveDeviceId, data, responseFunction){
+		return this.sendUserSyncMessageByFasterChannel(receiveDeviceId,data,responseFunction);
+	}
 
 	sendWebRTCConnectionStatusChangeMessage(webPageDeviceId,rasbperryPiDeviceId,status){
 		this.sendWebSocket(getWebRTCConnectionStatusChangeMessage(webPageDeviceId, rasbperryPiDeviceId, status));
@@ -840,6 +853,9 @@ class RemoteMe {
 
 // functions for users
 
+	sendUserMessage(receiveDeviceId, data) {
+		return this.sendUserMessageByFasterChannel(receiveDeviceId,data);
+	}
 
 	sendUserMessageByFasterChannel(receiveDeviceId, data) {
 		if (receiveDeviceId >= 0) {
@@ -855,7 +871,6 @@ class RemoteMe {
 		} else {
 			console.error("Cannot send message to deviceId with this id, did You configure your script correct ?");
 		}
-
 	}
 
 
@@ -869,7 +884,6 @@ class RemoteMe {
 				}
 			});
 		}
-
 	}
 
 	sendUserMessageWebsocket(receiveDeviceId, data) {

@@ -41,7 +41,7 @@ class RemoteMeData {
 
 	popFloat64() {
 		var ret= this.dataView.getFloat64(this.pos);
-		this.pos+=8
+		this.pos+=8;
 		return ret;
 
 	}
