@@ -824,7 +824,7 @@ function getOnConnectionChange(cnt,icon){
 			icon.animateCss("pulseMore",true);
 		}else if (status==ConnectingStatusEnum.CHECKING){
 			cnt.addClass("checking");
-			iicon.animateCss("pulseMore",true);
+			icon.animateCss("pulseMore",true);
 		}
 	}
 }
@@ -884,15 +884,116 @@ function addconnectionStatus(selector){
 
 	replaceComponent(selector,box);
 
+}
+
+
+function addCamera(selector){
+
+
+	let autoConnect=false;
+	let showInfo=true;
+	let width="400px";
+	let height="300px";
+
+	if ($(selector).attr("autoConnect") != undefined) {
+		autoConnect=$(selector).attr("autoConnect") =="true";
+	}
+	if ($(selector).attr("showInfo") != undefined) {
+		autoConnect=$(selector).attr("showInfo") =="true";
+	}
+
+	if ($(selector).attr("width") != undefined) {
+		width=$(selector).attr("width");
+	}
+
+	if ($(selector).attr("height") != undefined) {
+		height=$(selector).attr("height");
+	}
+
+	var box= $(`<video id="remoteVideo"  muted="muted" autoplay="autoplay" ondblclick="fullscreen(this)" style="width:${width};height:${height}" class='camera'></video>`);
+
+	if (showInfo){
+		var dialog=$(` <dialog class="mdl-dialog" id="WebRTCDialogInfo">
+			
+			<div class="mdl-dialog__content" style="padding:0px;margin:0px">
+			<h6 style="margin-top: 5px;">Allow data collection?</h6>
+			<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+			</div>
+			<!--<div class="mdl-dialog__actions">
+			  <button type="button" class="mdl-button">Close</button>
+			</div>-->
+		  </dialog>`);
+
+		$("body").append(dialog);
+
+		remoteme.remoteMeConfig.webRtcConnectionChange.push((state)=>{
+			if (! dialog.get()[0].showModal) {
+				dialogPolyfill.registerDialog(dialogX);
+			}
+
+
+			if (state==ConnectingStatusEnum.CONNECTED) {
+				showModal(dialog);
+				dialog.find("h6").html("View Connected");
+				setTimeout(function(){
+					dialog.get()[0].close();
+				},1000);
+			}else if (state==ConnectingStatusEnum.CONNECTING) {
+				showModal(dialog);
+				dialog.find("h6").html("View Connecting");
+			}else if (state==ConnectingStatusEnum.DISCONNECTING) {
+				showModal(dialog);
+				dialog.find("h6").html("View Disconnecting");
+			}else if (state==ConnectingStatusEnum.CHECKING) {
+				showModal(dialog);
+				dialog.find("h6").html("View Checking");
+			}else if (state==ConnectingStatusEnum.DISCONNECTED) {
+				showModal(dialog);
+				dialog.find("h6").html("View Disconnected");
+				setTimeout(function(){
+					dialog.get()[0].close();
+				},1500);
+			}else if (state==ConnectingStatusEnum.FAILED) {
+				showModal(dialog);
+				dialog.find("h6").html("View Failed");
+				setTimeout(function(){
+					dialog.get()[0].close();
+				},1500);
+			}
+
+		});
+	}
+
+
+
+	replaceComponent(selector,box);
+
+	if (autoConnect){
+		remoteme.setAutomaticlyConnectWebRTC();
+	}
+
+
+
 
 }
 
+function showModal(dialog){
+	if (!dialog.attr("open")){
+		dialog.get()[0].showModal();
+	}
+}
+
 function replace(){
-	var variables=$("variable");
-	var connectionStatus=$("connectionstatus");
+	let connectionStatus=$("connectionstatus");
 	for(let i=0;i<connectionStatus.length;i++){
 		addconnectionStatus(connectionStatus[i]);
 	}
+
+	let camera=$("camera");
+	for(let i=0;i<camera.length;i++){
+		addCamera(camera[i]);
+	}
+	let variables=$("variable");
 	for(let i=0;i<variables.length;i++){
 		variable=variables[i];
 		if ($(variable).attr( "type" ) =="BOOLEAN" && $(variable).attr( "component" ) =="button"){
@@ -1002,4 +1103,45 @@ function addDatePickerForChart(id,date1,date2,onSet){
 	});
 
 	onSet(date1,date2);
+}
+
+function fullscreen(element) {
+
+
+	var isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null) ||
+		(document.webkitFullscreenElement && document.webkitFullscreenElement !== null) ||
+		(document.mozFullScreenElement && document.mozFullScreenElement !== null) ||
+		(document.msFullscreenElement && document.msFullscreenElement !== null);
+
+	var docElm = document.documentElement;
+	if (!isInFullScreen) {
+		if (docElm.requestFullscreen) {
+			docElm.requestFullscreen();
+		} else if (docElm.mozRequestFullScreen) {
+			docElm.mozRequestFullScreen();
+		} else if (docElm.webkitRequestFullScreen) {
+			docElm.webkitRequestFullScreen();
+		} else if (docElm.msRequestFullscreen) {
+			docElm.msRequestFullscreen();
+		}
+		$(element).addClass("fullScreen");
+		$(element).attr("prevStyleSoMeTh1nGUniQue43355",$(element).attr("style"));
+		$(element).css({width:"100%",height:"100%",position:"absolute"});
+
+
+	} else {
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		} else if (document.webkitExitFullscreen) {
+			document.webkitExitFullscreen();
+		} else if (document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+		} else if (document.msExitFullscreen) {
+			document.msExitFullscreen();
+		}
+		$(element).removeClass("fullScreen");
+		$(element).attr("style",$(element).attr("prevStyleSoMeTh1nGUniQue43355"));
+		$(element).removeAttr("prevStyleSoMeTh1nGUniQue43355");
+
+	}
 }

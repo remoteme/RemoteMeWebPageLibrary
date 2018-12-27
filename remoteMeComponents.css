@@ -272,3 +272,9 @@
 .daterangepicker{
     font-family: inherit !important;
 }
+
+.camera{
+    background-color: gray;
+    width:400px;
+    height:300px;
+}
