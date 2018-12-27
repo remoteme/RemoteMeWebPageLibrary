@@ -899,7 +899,7 @@ function addCamera(selector){
 		autoConnect=$(selector).attr("autoConnect") =="true";
 	}
 	if ($(selector).attr("showInfo") != undefined) {
-		autoConnect=$(selector).attr("showInfo") =="true";
+		showInfo=$(selector).attr("showInfo") =="true";
 	}
 
 	if ($(selector).attr("width") != undefined) {
