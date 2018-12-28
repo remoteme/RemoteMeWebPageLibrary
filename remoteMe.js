@@ -192,7 +192,9 @@ class RemoteMe {
 				this.sendWebSocket(ret.getBufferArray());
 			}).bind(this), 60000);
 
-			RemoteMe.thiz.connectWebRTC();
+			if (RemoteMe.thiz.remoteMeConfig.automaticlyConnectWebRTC){
+				RemoteMe.thiz.connectWebRTC();
+			}
 		});
 
 		this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
@@ -472,7 +474,10 @@ class RemoteMe {
 			console.error("websocket is not connected cannot create webrtc connection");
 			return;
 		}
-
+		if (raspberryPiDeviceId==0) {
+			console.error("no rasbperrypi device");
+			return;
+		}
 		this.onWebRtcConnectionChange(ConnectingStatusEnum.CONNECTING);
 
 		// No Room concept, random generate room and client id.
