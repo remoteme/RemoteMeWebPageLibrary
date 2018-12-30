@@ -331,7 +331,15 @@ class RemoteMe {
 	}
 
 	sendWebRtc(bytearrayBuffer) {
+
 		if (this.isWebRTCConnected()) {
+			if (bytearrayBuffer instanceof RemoteMeData){
+				bytearrayBuffer=bytearrayBuffer.getBufferArray();
+			}else if (! bytearrayBuffer instanceof  ArrayBuffer){
+				bytearrayBuffer=new RemoteMeData(bytearrayBuffer);
+				bytearrayBuffer=bytearrayBuffer.getBufferArray();
+			}
+
 			this.openedChanel.send(bytearrayBuffer)
 		} else {
 			this.log("webrtc channels is not opened")
