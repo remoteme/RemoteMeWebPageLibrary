@@ -148,8 +148,8 @@ class RemoteMe {
 
 
 	logTrace(text) {
-		//	var now = (window.performance.now() / 1000).toFixed(3);
-		//	console.debug(now + ': ', text);
+			var now = (window.performance.now() / 1000).toFixed(3);
+			console.debug(now + ': ', text);
 	}
 
 
@@ -553,7 +553,7 @@ class RemoteMe {
 	createPeerConnection() {
 
 		this.peerConnection = new RTCPeerConnection(this.remoteMeConfig.pcConfig, this.remoteMeConfig.pcOptions);
-		this.peerConnection.oniceconnectionstatechange = function () {
+		this.peerConnection.oniceconnectionstatechange = function (event) {
 			if (RemoteMe.thiz.peerConnection.iceConnectionState == 'disconnected') {
 				RemoteMe.thiz.onWebRtcConnectionChange(ConnectingStatusEnum.DISCONNECTED);
 			} else if (RemoteMe.thiz.peerConnection.iceConnectionState == 'failed') {
@@ -669,6 +669,8 @@ class RemoteMe {
 			this.peerConnection.addIceCandidate(candidate, this.aic_success_cb, this.aic_failure_cb);
 
 
+		}else{
+			this.log("not uncrecongized peer message"+dataJson["type"]);
 		}
 	}
 
