@@ -948,14 +948,13 @@ function addCameraMouseTracking(selector){
 function getOnConnectionChange(cnt,icon){
 	return (status)=>{
 		cnt.removeClass();
-		ot.setDefaultDelay(200);
+
 		if (status==ConnectingStatusEnum.CONNECTING){
 			icon.addClass("connecting");
 			icon.animateCss("pulseMore",true);
 		}else if (status==ConnectingStatusEnum.CONNECTED){
 			cnt.addClass("connected");
 			icon.animateCss("rubberBandMore");
-			ot.setDefaultDelay(100);
 		}else if (status==ConnectingStatusEnum.DISCONNECTED){
 			cnt.addClass("disconnected");
 			icon.animateCss("zoomOut");

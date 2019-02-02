@@ -242,14 +242,70 @@ class Variables {
 
 	}
 
+	filter(toSend, variables) {
+
+		var filtered=[];
+
+		main:
+		for (var current of toSend) {
+			for (var variable of variables) {
+				if (variable.name==current.name && variable.type==current.type){
+					filtered.push(current);
+					continue main;
+				}
+			}
+		}
+
+
+		return filtered;
+
+	}
+
+
+
+	_getPropagateMessage(receiveId,toSend){
+		var size = 2 + 2+2 ;
+		for (var current of toSend) {
+			size += current.getSize();
+		}
+		var ret = new RemoteMeData(4 + size);
+		ret.putShort(MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE);
+		ret.putShort(size);
+		ret.putShort(thisDeviceId);
+		ret.putShort(receiveId);
+		ret.putShort(this.toSend.length);
+		for (var current of toSend) {
+			current.serialize(ret);
+		}
+		return ret;
+	}
+
 	_sendNow() {
 
 
-		var ignoreDeviceId = this.remoteMe.getDirectConnected();
+		var ignoreDeviceId = [];
+
+
+		this.remoteMe.directWebSocket.forEach(webSocket => {
+			let toSend=this.filter(this.toSend, webSocket.variables);
+
+			if (toSend.length>0) {
+				this.remoteMe.sendDirectWebsocket(webSocket.deviceId, this._getPropagateMessage(webSocket.deviceId,toSend));
+				ignoreDeviceId.push(webSocket.deviceId);
+			}
+		});
+
+
+		if (this.remoteMe.isWebRTCConnected()) {
+			this.remoteMe.sendWebRtc(this._getPropagateMessage(raspberryPiDeviceId,this.toSend));
+			ignoreDeviceId.push(raspberryPiDeviceId);
+		}
+
+
 
 		var size = 2 + 2 + 1 + ignoreDeviceId.length * 2;
 
-		for (var current of this.toSend) {
+		for (let current of this.toSend) {
 			size += current.getSize();
 		}
 		var ret = new RemoteMeData(4 + size);
@@ -258,28 +314,16 @@ class Variables {
 		ret.putShort(thisDeviceId);
 
 		ret.putByte(ignoreDeviceId.length);
-		for (var current of ignoreDeviceId) {
+		for (let current of ignoreDeviceId) {
 			ret.putShort(current);
 		}
 
-		var variables=[];
-		this.toSend.forEach(x=>{
-			var temp={};
-			temp.name=x.name;
-			temp.type=x.type;
-			variables.push(temp);
-		});
+
 
 		ret.putShort(this.toSend.length);
 
-		for (var current of this.toSend) {
+		for (let current of this.toSend) {
 			current.serialize(ret);
-		}
-
-		this.remoteMe.sendVariablesChangeDirect(variables, ret);
-
-		if (this.remoteMe.isWebRTCConnected()) {
-			this.remoteMe.sendWebRtc(ret);
 		}
 
 		if (this.remoteMe.isWebSocketConnected()) {

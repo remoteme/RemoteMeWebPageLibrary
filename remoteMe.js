@@ -932,50 +932,8 @@ class RemoteMe {
 
 	//------------------------ direct websocket
 
-	hasCommon(array1, array2) {
-		var compareObjects = function (o1, o2) {
-			for (var p in o1) {
-				if (o1.hasOwnProperty(p)) {
-					if (o1[p] !== o2[p]) {
-						return false;
-					}
-				}
-			}
-			for (var p in o2) {
-				if (o2.hasOwnProperty(p)) {
-					if (o1[p] !== o2[p]) {
-						return false;
-					}
-				}
-			}
-			return true;
-		};
-
-		for (var i = 0; i < array1.length; i++) {
-			for (var j = 0; j < array2.length; j++) {
-				if (array1[i] == array2[j]) {
-					return true;
-				} else if (compareObjects(array1[i], array2[j])) {
-					return true;
-				}
-
-			}
-		}
-		return false;
-
-	}
 
 
-	sendVariablesChangeDirect(variables, payload) {
-
-		this.directWebSocket.forEach(webSocket => {
-			var contains = 0;
-
-			if (this.hasCommon(variables, webSocket.variables)) {
-				this.sendDirectWebsocket(webSocket.deviceId, payload);
-			}
-		});
-	}
 
 	sendDirectWebsocket(receiveDeviceId, toSend) {
 		if (this.isDirectWebSocketConnectionConnected(receiveDeviceId)) {
@@ -1083,19 +1041,6 @@ class RemoteMe {
 		console.info(this.directWebSocket);
 	}
 
-
-	getDirectConnected() {
-		var ret = [];
-		this.directWebSocket.forEach(device => {
-			ret.push(device.deviceId);
-		});
-
-		if (this.isWebRTCConnected()) {
-			ret.push(raspberryPiDeviceId);
-		}
-
-		return ret;
-	}
 
 
 	onDirectConnectionChange(deviceId, status/*:ConnectingStatusEnum*/) {
