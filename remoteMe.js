@@ -1088,8 +1088,12 @@ class RemoteMe {
 		var ret = [];
 		this.directWebSocket.forEach(device => {
 			ret.push(device.deviceId);
-
 		});
+
+		if (this.isWebRTCConnected()) {
+			ret.push(raspberryPiDeviceId);
+		}
+
 		return ret;
 	}
 

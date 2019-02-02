@@ -2,6 +2,11 @@
 var id=0;
 var otChange= new OperationTimer(200);
 
+
+function getProportional(min,max,x){
+	return (min+max+x*(max-min))/2;
+}
+
 $.fn.extend({
 	animateCss: function(animationName,infinitive=false, callback) {
 		if (this.clean!=undefined){
@@ -39,11 +44,14 @@ $.fn.extend({
 });
 class Touch{
 
-	constructor(selector,xRange,yRange,onMove) {
+	constructor(selector,xMin,xMax,yMin,yMax,onMove) {
 
 		this.onMoveReal=onMove;
-		this.xRange=xRange;
-		this.yRange=yRange;
+		this.xMin=xMin;
+		this.xMax=xMax;
+		this.yMin=yMin;
+		this.yMax=yMax;
+
 		this.move=false;
 
 		this.steerParent=  $(`<div class="steerParent"></div>`);
@@ -137,8 +145,8 @@ class Touch{
 	}
 
 	onMove(x,y){
-		x=Math.round(x*this.xRange);
-		y=Math.round(y*this.yRange);
+		x=Math.round(getProportional(this.xMin,this.xMax,x));
+		y=Math.round(getProportional(this.yMin,this.yMax,y));
 
 		if (x==0&& y==0){
 			this.text.text("");
@@ -382,129 +390,118 @@ function addCheckBox(selector,switchMode=false){
 
 
 function addSlider(selector,switchMode=false){
-
-	var prop=readProperties(selector);
-
-	var slider = $(`<input class="mdl-slider mdl-js-slider" type="range"
-	min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
-
-
-	slider.on('input',function() {
-		otChange.execute(()=>{
-			remoteme.getVariables().setInteger(prop.name,slider.val());
-		});
-
-	});
-
-	remoteme.getVariables().observeInteger(prop.name,x=>{
-		slider.val(x);
-
-	});
-
-	var box= $(`<div><p>${prop.label}</p></div>`);
-	box.append(slider);
-
-	replaceComponent(selector,box);
-
-	componentHandler.upgradeElement(slider.get()[0]);
-}
-
-function add3Sliders(selector){
-
-
-
-
-	var prop = readProperties(selector);
-
-	var box= $(`<div class="box"><p>${prop.label}</p></div>`);
-	var sliders=[];
-
-
-	sliders[0] = $(`<input class="mdl-slider mdl-js-slider" type="range" min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
-	sliders[1] = $(`<input class="mdl-slider mdl-js-slider" type="range" min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
-	sliders[2] = $(`<input class="mdl-slider mdl-js-slider" type="range" min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
-
-
-
-	var onChange =(()=> {
-		otChange.execute(()=>{
-			remoteme.getVariables().setSmallInteger3(prop.name,sliders[0].val(),sliders[1].val(),sliders[2].val());
-		});
-
-	});
-
-
-	for(var i=0;i<3;i++){
-		box.append(sliders[i]);
-		sliders[i].on('input',onChange);
-	}
-
-
-
-
-	remoteme.getVariables().observeSmallInteger3(prop.name,(x1,x2,x3)=>{
-		sliders[0].val(x1);
-		sliders[1].val(x2);
-		sliders[2].val(x3);
-	});
-
-
-
-
-	replaceComponent(selector,box);
-
-
-	for(var i=0;i<3;i++){
-		componentHandler.upgradeElement(	sliders[i].get()[0]);
-
-	}
+	addXSliders(selector,1);
 }
 
 function add2Sliders(selector){
+	addXSliders(selector,2);
+}
+
+function add3Sliders(selector){
+	addXSliders(selector,3);
+
+}
 
 
+function addXSliders(selector,count){
 	var prop = readProperties(selector);
 
+	var valueLabel=$(selector).attr( "valuebox" )=="true";
 
 	var box= $(`<div class="box"><p>${prop.label}</p></div>`);
 	var sliders=[];
+	var labels=[];
+	var elements=[];
+
+	for(let i=0;i<count;i++){
+		sliders[i] = $(`<input class="mdl-slider mdl-js-slider" type="range" min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
 
 
-	sliders[0] = $(`<input class="mdl-slider mdl-js-slider" type="range" min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
-	sliders[1] = $(`<input class="mdl-slider mdl-js-slider" type="range" min="${prop.min}" max="${prop.max}" value="0" tabindex="0" ${prop.disabled?'disabled':''}>`);
+
+		if (valueLabel){
+			labels[i]=$(`<div style="float:left;margin-top:-10px;min-width:20px">0</div>`);
+			var div = $(`<div></div>`);
+			div.append(labels[i]);
+			div.append(sliders[i]);
+			div.append($(`<div style="clear:both"></div>`));
+			elements[i]=div;
+		}else{
+			elements[i]=sliders;
+		}
 
 
-
-	var onChange =(()=> {
-		otChange.execute(()=>{
-			remoteme.getVariables().setSmallInteger2(prop.name,sliders[0].val(),sliders[1].val());
-		});
-
-	});
-
-
-	for(var i=0;i<2;i++){
-		box.append(sliders[i]);
-		sliders[i].on('input',onChange);
 	}
 
 
+	var onChange;
+	if (count ==1){
+		onChange =(()=> {
+			otChange.execute(()=>{
+				remoteme.getVariables().setInteger(prop.name,sliders[0].val());
+			});
+
+		});
+	}else if (count ==2){
+		onChange =(()=> {
+			otChange.execute(()=>{
+				remoteme.getVariables().setSmallInteger2(prop.name,sliders[0].val(),sliders[1].val());
+			});
+
+		});
+	}else if (count ==3){
+		onChange =(()=> {
+			otChange.execute(()=>{
+				remoteme.getVariables().setSmallInteger3(prop.name,sliders[0].val(),sliders[1].val(),sliders[2].val());
+			});
+
+		});
+	}
 
 
-	remoteme.getVariables().observeSmallInteger2(prop.name,(x1,x2)=>{
-		sliders[0].val(x1);
-		sliders[1].val(x2);
-	});
+	for(let i=0;i<count;i++){
+		box.append(elements[i]);
+		sliders[i].on('input',onChange);
+	}
 
+	if (count ==1){
+		remoteme.getVariables().observeInteger(prop.name,x=>{
+			sliders[0].val(x);
+			if (valueLabel){
+				labels[0].html(x);
+			}
+		});
+	}else if (count ==2){
+		remoteme.getVariables().observeSmallInteger2(prop.name, (x1, x2) => {
+			sliders[0].val(x1);
+			sliders[1].val(x2);
+			if (valueLabel){
+				labels[0].html(x1);
+				labels[1].html(x2);
+			}
+		});
+	}else if (count ==3) {
+		remoteme.getVariables().observeSmallInteger3(prop.name, (x1, x2, x3) => {
+			sliders[0].val(x1);
+			sliders[1].val(x2);
+			sliders[2].val(x3);
+			if (valueLabel) {
+				labels[0].html(x1);
+				labels[1].html(x2);
+				labels[2].html(x3);
+			}
+		});
+	}
 
 	replaceComponent(selector,box);
 
 
-	for(var i=0;i<2;i++){
+	for(var i=0;i<count;i++){
 		componentHandler.upgradeElement(sliders[i].get()[0]);
 
 	}
+
 }
+
 
 
 function addGauge(selector){
@@ -745,11 +742,6 @@ function addDiv(selector,variableType) {
 
 	var prop = readProperties(selector);
 
-	var label;
-
-
-
-
 	var template="{value}";
 
 
@@ -780,39 +772,190 @@ function addJoystick(selector){
 	var prop=readProperties(selector);
 
 
+	var xMin=-100;
+	var xMax=100;
+	var yMin=-100;
+	var yMax=100;
+	var invertX=false;
+	var invertY=false;
 
-	var xRange=100;
-	var yRange=100;
 	if ($(selector).attr( "xRange" )!=undefined){
-		xRange=$(selector).attr( "xRange" );
+		xMin=-parseInt($(selector).attr( "xRange" ));
+		xMax=parseInt($(selector).attr( "xRange" ));
 	}
 
 
 	if ($(selector).attr( "yRange" )!=undefined){
-		yRange=$(selector).attr( "yRange" );
+		yMin=-parseInt($(selector).attr( "yRange" ));
+		yMax=parseInt($(selector).attr( "yRange" ));
 	}
 
-	var touch=new Touch(selector,xRange,yRange,(x,y)=>{
-		console.info(x+" "+y);
+
+	if ($(selector).attr( "invertX" )!=undefined){
+		invertX=$(selector).attr("invertX") =="true";
+	}
+
+	if ($(selector).attr( "invertY" )!=undefined){
+		invertY=$(selector).attr("invertY") =="true";
+	}
+
+	if ($(selector).attr( "xMin" )!=undefined){
+		xMin=parseInt($(selector).attr( "xMin" ));
+	}
+	if ($(selector).attr( "xMax" )!=undefined){
+		xMax=parseInt($(selector).attr( "xMax" ));
+	}
+
+	if ($(selector).attr( "yMin" )!=undefined){
+		yMin=parseInt($(selector).attr( "yMin" ));
+	}
+	if ($(selector).attr( "yMax" )!=undefined){
+		yMax=parseInt($(selector).attr( "yMax" ));
+	}
+	if (invertX){
+		let temp=xMin;
+		xMin=xMax;
+		xMax=temp;
+	}
+	if (invertY){
+		let temp=yMin;
+		yMin=yMax;
+		yMax=temp;
+	}
+
+
+	var touch=new Touch(selector,xMin,xMax,yMin,yMax,(x,y)=>{
+
 		otChange.executeWithId(prop.name+"SmallInteger2",()=>{
 			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
 		});
 
 	});
 
+}
+
+function addCameraMouseTracking(selector){
+
+	var prop=readProperties(selector);
+
+	var invertX=false;
+	var invertY=false;
+
+	var xMin=-100;
+	var xMax=100;
+	var yMin=-100;
+	var yMax=100;
+
+	var requiredMouseDown=true;
+	var reset=true;
+
+	if ($(selector).attr( "invertX" )!=undefined){
+		invertX=$(selector).attr("invertX") =="true";
+	}
+
+	if ($(selector).attr( "invertY" )!=undefined){
+		invertY=$(selector).attr("invertY") =="true";
+	}
+
+	if ($(selector).attr("requiredMouseDown") != undefined) {
+		requiredMouseDown=$(selector).attr("requiredMouseDown") =="true";
+	}
+	if ($(selector).attr("reset") != undefined) {
+		reset=$(selector).attr("reset") =="true";
+	}
+
+	if ($(selector).attr( "xMin" )!=undefined){
+		xMin=parseInt($(selector).attr( "xMin" ));
+	}
+	if ($(selector).attr( "xMax" )!=undefined){
+		xMax=parseInt($(selector).attr( "xMax" ));
+	}
+
+	if ($(selector).attr( "yMin" )!=undefined){
+		yMin=parseInt($(selector).attr( "yMin" ));
+	}
+	if ($(selector).attr( "yMax" )!=undefined){
+		yMax=parseInt($(selector).attr( "yMax" ));
+	}
+
+	if (invertX){
+		let temp=xMin;
+		xMin=xMax;
+		xMax=temp;
+	}
+	if (invertY){
+		let temp=yMin;
+		yMin=yMax;
+		yMax=temp;
+	}
 
 
+	let video = $("video");
+	if (video.get(0)!=undefined){
+
+		var sendNow =(x,y)=>{
+
+			x=Math.min(1,Math.max(-1,x));
+			y=Math.min(1,Math.max(-1,y));
+
+			otChange.executeWithId(prop.name+"SmallInteger2",()=>{
+				let xS=Math.round(getProportional(xMin,xMax,x));
+				let yS=Math.round(getProportional(yMin,yMax,y));
+				remoteme.getVariables().setSmallInteger2(prop.name,xS,yS);
+				console.info(xS+" "+yS);
+			});
+
+		};
+
+		video.on("mousemove mousedown",event=>{
+			if(event.which === 1 || !requiredMouseDown){
+				let ox=event.offsetX;
+				let oy=event.offsetY;
+				let width=video.width();
+				let height=video.height();
+
+				let x=(ox/width-0.5)*2;
+				let y=-(oy/height-0.5)*2;
+
+				sendNow(x,y);
+			}
+
+		});
+
+		video.on("touchmove touchstart",e=>{
+			e.preventDefault();
+
+
+			let ox= e.touches[0].pageX - e.touches[0].target.offsetLeft;
+			let oy= e.touches[0].pageY - e.touches[0].target.offsetTop;
+			let width=video.width();
+			let height=video.height();
+
+			let x=(ox/width-0.5)*2;
+			let y=-(oy/height-0.5)*2;
+
+			sendNow(x,y);
+		});
+
+		if (reset){
+			video.on("touchend mouseup",e=>{
+				sendNow(0,0);
+			});
+		}
+	}
 }
 
 function getOnConnectionChange(cnt,icon){
 	return (status)=>{
 		cnt.removeClass();
+		ot.setDefaultDelay(200);
 		if (status==ConnectingStatusEnum.CONNECTING){
 			icon.addClass("connecting");
 			icon.animateCss("pulseMore",true);
 		}else if (status==ConnectingStatusEnum.CONNECTED){
 			cnt.addClass("connected");
 			icon.animateCss("rubberBandMore");
+			ot.setDefaultDelay(100);
 		}else if (status==ConnectingStatusEnum.DISCONNECTED){
 			cnt.addClass("disconnected");
 			icon.animateCss("zoomOut");
@@ -1054,6 +1197,13 @@ function replace(){
 
 		else if ($(variable).attr( "type" ) =="SMALL_INTEGER_2" && $(variable).attr( "component" ) =="joystick"){
 			addJoystick(variable);
+		}
+	}
+	variables=$("variable");
+	for(let i=0;i<variables.length;i++) {
+		variable = variables[i];
+		if ($(variable).attr( "component" ) =="cameraMouseTrack"){
+			addCameraMouseTracking(variable);
 		}
 	}
 }

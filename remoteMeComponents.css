@@ -277,4 +277,13 @@
     background-color: gray;
     width:400px;
     height:300px;
+    position:relative;
+}
+
+.videoMousePosition{
+    position:absolute;
+    top:0px;
+    right:0px;
+    color:yellow;
+
 }
