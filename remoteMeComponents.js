@@ -7,6 +7,10 @@ function getProportional(min,max,x){
 	return (min+max+x*(max-min))/2;
 }
 
+function nicePrint(x){
+	return (x>=0?"&nbsp;":"")+parseFloat(x).toFixed(2);
+}
+
 $.fn.extend({
 	animateCss: function(animationName,infinitive=false, callback) {
 		if (this.clean!=undefined){
@@ -42,6 +46,150 @@ $.fn.extend({
 		return this;
 	},
 });
+
+
+
+class Gyroscope{
+
+	constructor(xMin,xMax,yMin,yMax,xRange,yRange,onMove) {
+		var thiz=this;
+
+		this.on=false;
+
+		this.onMove=onMove;
+		this.xMin=xMin;
+		this.xMax=xMax;
+		this.yMin=yMin;
+		this.yMax=yMax;
+		this.xRange=xRange;
+		this.yRange=yRange;
+
+
+		const deg2rad = Math.PI / 180; // Degree-to-Radian conversion
+		this.previousRotMat=undefined;
+
+		this.inverseMat;
+		this.currentRotMat;
+		this.relativeRotationDelta;
+
+
+
+		window.addEventListener("deviceorientation", function(e) {
+			if (thiz.on){
+				// init values if necessary
+				let alpha=e.alpha;
+				let beta=e.beta;
+				let gamma=e.gamma;
+
+				if (!thiz.previousRotMat) {
+					thiz.previousRotMat = glMatrix.mat3.create();
+					thiz.currentRotMat = glMatrix.mat3.create();
+					thiz.relativeRotationDelta = glMatrix.mat3.create();
+					thiz.inverseMat= glMatrix.mat3.create();
+					thiz.fromOrientation(thiz.currentRotMat, alpha * deg2rad, beta * deg2rad, gamma * deg2rad);
+
+					// save last orientation
+					glMatrix.mat3.copy(thiz.previousRotMat, thiz.currentRotMat);
+					// get rotation in the previous orientation coordinate
+				}
+
+				thiz.fromOrientation(thiz.currentRotMat, alpha * deg2rad, beta * deg2rad, gamma * deg2rad);
+
+				glMatrix.mat3.transpose(thiz.inverseMat, thiz.previousRotMat); // for rotation matrix, inverse is transpose
+
+
+				glMatrix.mat3.multiply(thiz.relativeRotationDelta, thiz.currentRotMat, thiz.inverseMat);
+
+				// add the angular deltas to the cummulative rotation
+				let x1 = Math.asin(thiz.relativeRotationDelta[6]) / deg2rad;
+				let x2 = Math.asin(thiz.relativeRotationDelta[7]) / deg2rad;
+
+				thiz.onMoveEvent(x1,x2);
+			}
+
+		});
+
+	}
+
+	normalize(a){
+		var zn=1;
+		if (a<0){
+			zn=-1;
+		}
+		return zn*Math.pow(Math.abs(a)/5,2);
+	}
+
+	reset(){
+		this.previousRotMat=undefined;
+		this.onMoveEvent(0,0);
+	}
+	onMoveEvent(x,y){
+		x=this.normalize(x);
+		y=this.normalize(y);
+
+
+
+		x=x/this.xRange;
+		y=y/this.yRange;
+		x=Math.min(1,Math.max(x,-1));
+		y=Math.min(1,Math.max(y,-1));
+
+
+
+
+		this.onMove(Math.round(getProportional(this.xMin,this.xMax,x)),
+			Math.round(getProportional(this.yMin,this.yMax,y)),
+			x,y);
+	}
+
+
+	enable(enabled){
+		this.reset();
+		this.on=enabled;
+	}
+
+	onOff(){
+		if (this.on){
+			this.enable(false);
+			return false;
+		}else {
+			this.enable(true);
+			return true;
+		}
+	}
+
+	 fromOrientation(out, alpha, beta, gamma) {
+		let _z = alpha;
+		let _x = beta;
+		let _y = gamma;
+
+		let cX = Math.cos( _x );
+		let cY = Math.cos( _y );
+		let cZ = Math.cos( _z );
+		let sX = Math.sin( _x );
+		let sY = Math.sin( _y );
+		let sZ = Math.sin( _z );
+
+		out[0] = cZ * cY + sZ * sX * sY,    // row 1, col 1
+			out[1] = cX * sZ,                   // row 2, col 1
+			out[2] = - cZ * sY + sZ * sX * cY , // row 3, col 1
+
+			out[3] = - cY * sZ + cZ * sX * sY,  // row 1, col 2
+			out[4] = cZ * cX,                   // row 2, col 2
+			out[5] = sZ * sY + cZ * cY * sX,    // row 3, col 2
+
+			out[6] = cX * sY,                   // row 1, col 3
+			out[7] = - sX,                      // row 2, col 3
+			out[8] = cX * cY                    // row 3, col 3
+	};
+
+
+
+
+}
+
+
+
 class Touch{
 
 	constructor(selector,xMin,xMax,yMin,yMax,onMove) {
@@ -406,7 +554,8 @@ function add3Sliders(selector){
 function addXSliders(selector,count){
 	var prop = readProperties(selector);
 
-	var valueLabel=$(selector).attr( "valuebox" )=="true";
+
+	var valueLabel=getBoolean("valueLabel",$(selector),true);
 
 	var box= $(`<div class="box"><p>${prop.label}</p></div>`);
 	var sliders=[];
@@ -512,8 +661,9 @@ function addGauge(selector){
 
 	var widthheight=$(selector).attr( "widthheight" );
 
-	var borders=$(selector).attr( "borders" )=="true";
-	var valueBox=$(selector).attr( "valueBox" )=="true";
+	var borders=getBoolean("borders",$(selector),true);
+	var valueBox=getBoolean("valueBox",$(selector),true);
+
 
 	var majorTick=parseInt($(selector).attr( "tickDelta" ));
 	var minorTick=parseInt($(selector).attr( "minorTick" ));
@@ -772,12 +922,16 @@ function addJoystick(selector){
 	var prop=readProperties(selector);
 
 
-	var xMin=-100;
-	var xMax=100;
-	var yMin=-100;
-	var yMax=100;
-	var invertX=false;
-	var invertY=false;
+
+
+	var invertX=getBoolean("invertX",$(selector),false);
+	var invertY=getBoolean("invertY",$(selector),false);
+
+	var xMin=getInteger("xMin",$(selector),-100);
+	var xMax=getInteger("xMax",$(selector),100);
+	var yMin=getInteger("yMin",$(selector),-100);
+	var yMax=getInteger("yMax",$(selector),100);
+
 
 	if ($(selector).attr( "xRange" )!=undefined){
 		xMin=-parseInt($(selector).attr( "xRange" ));
@@ -791,27 +945,6 @@ function addJoystick(selector){
 	}
 
 
-	if ($(selector).attr( "invertX" )!=undefined){
-		invertX=$(selector).attr("invertX") =="true";
-	}
-
-	if ($(selector).attr( "invertY" )!=undefined){
-		invertY=$(selector).attr("invertY") =="true";
-	}
-
-	if ($(selector).attr( "xMin" )!=undefined){
-		xMin=parseInt($(selector).attr( "xMin" ));
-	}
-	if ($(selector).attr( "xMax" )!=undefined){
-		xMax=parseInt($(selector).attr( "xMax" ));
-	}
-
-	if ($(selector).attr( "yMin" )!=undefined){
-		yMin=parseInt($(selector).attr( "yMin" ));
-	}
-	if ($(selector).attr( "yMax" )!=undefined){
-		yMax=parseInt($(selector).attr( "yMax" ));
-	}
 	if (invertX){
 		let temp=xMin;
 		xMin=xMax;
@@ -838,45 +971,18 @@ function addCameraMouseTracking(selector){
 
 	var prop=readProperties(selector);
 
-	var invertX=false;
-	var invertY=false;
+	var invertX=getBoolean("invertX",$(selector),false);
+	var invertY=getBoolean("invertY",$(selector),false);
 
-	var xMin=-100;
-	var xMax=100;
-	var yMin=-100;
-	var yMax=100;
+	var xMin=getInteger("xMin",$(selector),-100);
+	var xMax=getInteger("xMax",$(selector),100);
+	var yMin=getInteger("yMin",$(selector),-100);
+	var yMax=getInteger("yMax",$(selector),100);
 
-	var requiredMouseDown=true;
-	var reset=true;
+	var requiredMouseDown=getBoolean("requiredMouseDown",$(selector),true);
+	var reset=getBoolean("reset",$(selector),true);
 
-	if ($(selector).attr( "invertX" )!=undefined){
-		invertX=$(selector).attr("invertX") =="true";
-	}
 
-	if ($(selector).attr( "invertY" )!=undefined){
-		invertY=$(selector).attr("invertY") =="true";
-	}
-
-	if ($(selector).attr("requiredMouseDown") != undefined) {
-		requiredMouseDown=$(selector).attr("requiredMouseDown") =="true";
-	}
-	if ($(selector).attr("reset") != undefined) {
-		reset=$(selector).attr("reset") =="true";
-	}
-
-	if ($(selector).attr( "xMin" )!=undefined){
-		xMin=parseInt($(selector).attr( "xMin" ));
-	}
-	if ($(selector).attr( "xMax" )!=undefined){
-		xMax=parseInt($(selector).attr( "xMax" ));
-	}
-
-	if ($(selector).attr( "yMin" )!=undefined){
-		yMin=parseInt($(selector).attr( "yMin" ));
-	}
-	if ($(selector).attr( "yMax" )!=undefined){
-		yMax=parseInt($(selector).attr( "yMax" ));
-	}
 
 	if (invertX){
 		let temp=xMin;
@@ -973,21 +1079,12 @@ function getOnConnectionChange(cnt,icon){
 function addconnectionStatus(selector){
 
 
-	let webSocket=false;
-	let directConnection=false;
-	let camera=false;
 
-	if ($(selector).attr("webSocket") != undefined) {
-		webSocket=$(selector).attr("webSocket") =="true";
-	}
+	let webSocket=getBoolean("webSocket",$(selector),false);
+	let directConnection=getBoolean("directConnection",$(selector),false);
+	let camera=getBoolean("camera",$(selector),false);
 
-	if ($(selector).attr("directConnection") != undefined) {
-		directConnection=$(selector).attr("directConnection") =="true";
-	}
 
-	if ($(selector).attr("camera") != undefined) {
-		camera=$(selector).attr("camera") =="true";
-	}
 
 
 	var box= $(`<div class='statusIcons'></div>`);
@@ -1036,6 +1133,7 @@ function addCamera(selector){
 	let showInfo=true;
 	let width="400px";
 	let height="300px";
+
 
 	if ($(selector).attr("autoConnect") != undefined) {
 		autoConnect=$(selector).attr("autoConnect") =="true";
@@ -1119,6 +1217,75 @@ function addCamera(selector){
 
 }
 
+
+function getInteger(elementName,element,defValue) {
+	if (element.attr(elementName) != undefined) {
+		defValue = parseInt($(element).attr(elementName));
+	}
+	return defValue;
+}
+function getBoolean(elementName,element,defValue) {
+
+	if (element.attr(elementName) != undefined) {
+		defValue = $(element).attr(elementName)=="true";
+	}
+	return defValue;
+}
+
+function addGyroscope(selector){
+	var prop = readProperties(selector);
+
+	var invertX=getBoolean("invertX",$(selector),false);
+	var invertY=getBoolean("invertY",$(selector),false);
+
+	var xMin=getInteger("xMin",$(selector),-100);
+	var xMax=getInteger("xMax",$(selector),100);
+	var yMin=getInteger("yMin",$(selector),-100);
+	var yMax=getInteger("yMax",$(selector),100);
+	var xRange=getInteger("xRange",$(selector),20);
+	var yRange=getInteger("yRange",$(selector),20);
+
+
+
+	if (invertX){
+		let temp=xMin;
+		xMin=xMax;
+		xMax=temp;
+	}
+	if (invertY){
+		let temp=yMin;
+		yMin=yMax;
+		yMax=temp;
+	}
+
+
+
+	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
+
+	var gyroscope = new Gyroscope(xMin,xMax,yMin,yMax,xRange,yRange,(x,y,xN,yN)=>{
+		otChange.execute(()=>{
+			element.html(prop.label+" "+nicePrint(xN)+" "+nicePrint(yN));
+
+			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
+		});
+	});
+
+
+	$(element).click(()=>{
+		if (gyroscope.onOff()){
+			$(element).addClass("mdl-button--accent");
+		}else{
+			$(element).removeClass("mdl-button--accent");
+			element.html(prop.label);
+		}
+
+	});
+
+
+	replaceComponent(selector,element);
+	componentHandler.upgradeElement(	element.get()[0]);
+}
+
 function showModal(dialog){
 	if (!dialog.attr("open")){
 		dialog.get()[0].showModal();
@@ -1196,6 +1363,8 @@ function replace(){
 
 		else if ($(variable).attr( "type" ) =="SMALL_INTEGER_2" && $(variable).attr( "component" ) =="joystick"){
 			addJoystick(variable);
+		}else if ($(variable).attr( "type" ) =="SMALL_INTEGER_2" && $(variable).attr( "component" ) =="gyroscope"){
+			addGyroscope(variable);
 		}
 	}
 	variables=$("variable");
