@@ -554,8 +554,8 @@ function add3Sliders(selector){
 function addXSliders(selector,count){
 	var prop = readProperties(selector);
 
+	var valueBox=getBoolean("valueBox",$(selector),true);
 
-	var valueLabel=getBoolean("valueLabel",$(selector),true);
 
 	var box= $(`<div class="box"><p>${prop.label}</p></div>`);
 	var sliders=[];
@@ -567,7 +567,7 @@ function addXSliders(selector,count){
 
 
 
-		if (valueLabel){
+		if (valueBox){
 			labels[i]=$(`<div style="float:left;margin-top:-10px;min-width:20px">0</div>`);
 			var div = $(`<div></div>`);
 			div.append(labels[i]);
@@ -615,7 +615,7 @@ function addXSliders(selector,count){
 	if (count ==1){
 		remoteme.getVariables().observeInteger(prop.name,x=>{
 			sliders[0].val(x);
-			if (valueLabel){
+			if (valueBox){
 				labels[0].html(x);
 			}
 		});
@@ -623,7 +623,7 @@ function addXSliders(selector,count){
 		remoteme.getVariables().observeSmallInteger2(prop.name, (x1, x2) => {
 			sliders[0].val(x1);
 			sliders[1].val(x2);
-			if (valueLabel){
+			if (valueBox){
 				labels[0].html(x1);
 				labels[1].html(x2);
 			}
@@ -633,7 +633,7 @@ function addXSliders(selector,count){
 			sliders[0].val(x1);
 			sliders[1].val(x2);
 			sliders[2].val(x3);
-			if (valueLabel) {
+			if (valueBox) {
 				labels[0].html(x1);
 				labels[1].html(x2);
 				labels[2].html(x3);
