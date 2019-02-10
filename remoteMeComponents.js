@@ -1361,7 +1361,7 @@ function replace(){
 			addColorChange(variable);
 		}
 
-		else if ($(variable).attr( "type" ) =="SMALL_INTEGER_2" && $(variable).attr( "component" ) =="joystick"){
+		else if ($(variable).attr( "type" ) =="SMALL_INTEGER_2" && ( $(variable).attr( "component" ) =="joystick" ||($(variable).attr( "component" ) =="joystick_simple"))){
 			addJoystick(variable);
 		}else if ($(variable).attr( "type" ) =="SMALL_INTEGER_2" && $(variable).attr( "component" ) =="gyroscope"){
 			addGyroscope(variable);
