@@ -202,7 +202,13 @@ class Touch{
 
 		this.move=false;
 
-		this.steerParent=  $(`<div class="steerParent"></div>`);
+		let clazz="steerParent ";
+		if ($(selector).attr( "class" )!=undefined){
+			clazz+=$(selector).attr( "class" );
+			$(selector).removeAttr( "class" );
+		}
+
+		this.steerParent=  $(`<div class="${clazz}"></div>`);
 		this.pointer= $(`<div class="steer" ></div>`);
 		this.text= $(`<div class="text" ></div>`);
 		this.steerParent.append(this.pointer);
@@ -1131,26 +1137,44 @@ function addCamera(selector){
 
 	let autoConnect=false;
 	let showInfo=true;
-	let width="400px";
-	let height="300px";
 
 
-	if ($(selector).attr("autoConnect") != undefined) {
-		autoConnect=$(selector).attr("autoConnect") =="true";
+	let style="";
+	let clazz="";
+	if ($(selector).attr("style")==undefined && $(selector).attr("class")==undefined ){
+		let width="400px";
+		let height="300px";
+
+
+		if ($(selector).attr("autoConnect") != undefined) {
+			autoConnect=$(selector).attr("autoConnect") =="true";
+		}
+		if ($(selector).attr("showInfo") != undefined) {
+			showInfo=$(selector).attr("showInfo") =="true";
+		}
+
+		if ($(selector).attr("width") != undefined) {
+			width=$(selector).attr("width");
+		}
+
+		if ($(selector).attr("height") != undefined) {
+			height=$(selector).attr("height");
+		}
+
+		style=`style=width:${width};height:${height}`;
 	}
-	if ($(selector).attr("showInfo") != undefined) {
-		showInfo=$(selector).attr("showInfo") =="true";
+
+	if ($(selector).attr("style")!=undefined){
+		style="style=\""+$(selector).attr("style");+"\"";
 	}
 
-	if ($(selector).attr("width") != undefined) {
-		width=$(selector).attr("width");
+	if ($(selector).attr("class")!=undefined){
+		clazz="class=\""+$(selector).attr("class")+"\"";
+	}else{
+		clazz="class=\"camera\"";
 	}
 
-	if ($(selector).attr("height") != undefined) {
-		height=$(selector).attr("height");
-	}
-
-	var box= $(`<video id="remoteVideo"  muted="muted" autoplay="autoplay" ondblclick="fullscreen(this)" style="width:${width};height:${height}" class='camera'></video>`);
+	var box= $(`<video id="remoteVideo"  muted="muted" autoplay="autoplay" ondblclick="fullscreen(this)" ${style} ${clazz} ></video>`);
 
 	if (showInfo){
 		var dialog=$(` <dialog class="mdl-dialog" id="WebRTCDialogInfo">
