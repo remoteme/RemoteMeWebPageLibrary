@@ -1141,17 +1141,19 @@ function addCamera(selector){
 
 	let style="";
 	let clazz="";
+	if ($(selector).attr("autoConnect") != undefined) {
+		autoConnect=$(selector).attr("autoConnect") =="true";
+	}
+
+	if ($(selector).attr("showInfo") != undefined) {
+		showInfo=$(selector).attr("showInfo") =="true";
+	}
+
+
 	if ($(selector).attr("style")==undefined && $(selector).attr("class")==undefined ){
 		let width="400px";
 		let height="300px";
 
-
-		if ($(selector).attr("autoConnect") != undefined) {
-			autoConnect=$(selector).attr("autoConnect") =="true";
-		}
-		if ($(selector).attr("showInfo") != undefined) {
-			showInfo=$(selector).attr("showInfo") =="true";
-		}
 
 		if ($(selector).attr("width") != undefined) {
 			width=$(selector).attr("width");

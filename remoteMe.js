@@ -15,47 +15,6 @@ ConnectingStatusEnum = {
 	CHECKING: 5
 };
 
-/*
- Class: RemoteMeConfiguration
- // Initial configuration for remoteMe class
- Default settings:
- --- Code
- {
-	automaticlyConnectWS: true,
-	automaticlyConnectWebRTC: false,
-	webSocketConnectionChange: [],
-	directConnectionChange: [],
-	webRtcConnectionChange: [],
-	onUserMessage: undefined,
-	onUserSyncMessage: undefined,
-	pcConfig: {"iceServers": [{"urls": "stun:stun.l.google.com:19302"}]},
-	pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
-	mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}}
-};
----
-  */
-/*
-
-class RemoteMeConfiguration{
-	// Property: automaticlyConnectWS
-	// *true* or false, if Websocket connection wiht app.remoteMe.org should be made automaticly
-	automaticlyConnectWS;
-	// Property: automaticlyConnectWebRTC
-	// true or *false*, if Websocket connection wiht app.remoteMe.org should be made automaticly
-	automaticlyConnectWebRTC;
-	// Property: webSocketConnectionChange
-	// array of functions which will be called when websocketConnection will be changed
-	// functions should be one parameter ts called with <ConnectingStatusEnum> parameter
-	webSocketConnectionChange;
-	directConnectionChange;
-	webRtcConnectionChange;
-	onUserMessage;
-	onUserSyncMessage;
-	pcConfig;
-	pcOptions;
-	mediaConstraints;
-}
-*/
 
 // Class: RemoteMe
 // A Main class to communicate with remoteMe system
