@@ -305,7 +305,7 @@ class Touch{
 		if (x==0&& y==0){
 			this.text.text("");
 		}else{
-			this.text.text(x+" "+y);
+			this.text.html(this.toFixes(x,this.xMin,this.xMax)+" "+this.toFixes(y,this.yMin,this.yMax));
 		}
 
 		if (this.onMoveReal!=undefined){
@@ -335,8 +335,23 @@ class Touch{
 		}
 	}
 
-	toFixes(i){
-		return (i>=0?' ':'')+(i/100.0).toFixed(2);
+	toFixes(i,min,max){
+		let leadingZeros= Math.log(Math.max(Math.abs(min),Math.abs(max))) * Math.LOG10E + 1 | 0;
+
+		let space="";
+		if (min<0 && i>=0){
+			space="&nbsp;";
+		}
+
+		let retX=""+Math.abs(i);
+
+		while(leadingZeros>retX.length){
+			space=space+"&nbsp;";
+			leadingZeros--;
+		}
+
+
+		return space+i;
 	}
 
 	getCartesianDiff(p1,p2){
