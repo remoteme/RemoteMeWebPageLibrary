@@ -51,7 +51,7 @@ $.fn.extend({
 
 class Gyroscope{
 
-	constructor(xMin,xMax,yMin,yMax,xRange,yRange,onMove) {
+	constructor(xMin,xMax,yMin,yMax,xRange,yRange,xySwap,orientationSupport,onMove) {
 		var thiz=this;
 
 		this.on=false;
@@ -63,6 +63,8 @@ class Gyroscope{
 		this.yMax=yMax;
 		this.xRange=xRange;
 		this.yRange=yRange;
+		this.xySwap=xySwap;
+		this.orientationSupport=orientationSupport;
 
 
 		const deg2rad = Math.PI / 180; // Degree-to-Radian conversion
@@ -124,6 +126,21 @@ class Gyroscope{
 		this.onMoveEvent(0,0);
 	}
 	onMoveEvent(x,y){
+		if (this.xySwap){
+			let temp=x;
+			x=y;
+			y=temp;
+		}
+
+		if (this.orientationSupport){
+			if(window.innerHeight < window.innerWidth){
+				let temp=x;
+				x=y;
+				y=temp;
+			}
+		}
+
+
 		x=this.normalize(x);
 		y=this.normalize(y);
 
@@ -1287,6 +1304,10 @@ function addGyroscope(selector){
 	var yRange=getInteger("yRange",$(selector),20);
 
 
+	var xySwap=getBoolean("xySwap",$(selector),false);
+	var orientationSupport=getBoolean("orientationSupport",$(selector),false);
+
+
 
 	if (invertX){
 		let temp=xMin;
@@ -1303,7 +1324,7 @@ function addGyroscope(selector){
 
 	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
 
-	var gyroscope = new Gyroscope(xMin,xMax,yMin,yMax,xRange,yRange,(x,y,xN,yN)=>{
+	var gyroscope = new Gyroscope(xMin,xMax,yMin,yMax,xRange,yRange,xySwap,orientationSupport,(x,y,xN,yN)=>{
 		otChange.execute(()=>{
 			element.html(prop.label+" "+nicePrint(xN)+" "+nicePrint(yN));
 
