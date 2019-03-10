@@ -1,7 +1,7 @@
 
 var id=0;
-var otChange= new OperationTimer(200);
-
+var otChange200= new OperationTimer(200);
+var otChange300= new OperationTimer(200);
 
 function getProportional(min,max,x){
 	return (min+max+x*(max-min))/2;
@@ -623,21 +623,21 @@ function addXSliders(selector,count){
 	var onChange;
 	if (count ==1){
 		onChange =(()=> {
-			otChange.execute(()=>{
+			otChange200.execute(()=>{
 				remoteme.getVariables().setInteger(prop.name,sliders[0].val());
 			});
 
 		});
 	}else if (count ==2){
 		onChange =(()=> {
-			otChange.execute(()=>{
+			otChange200.execute(()=>{
 				remoteme.getVariables().setSmallInteger2(prop.name,sliders[0].val(),sliders[1].val());
 			});
 
 		});
 	}else if (count ==3){
 		onChange =(()=> {
-			otChange.execute(()=>{
+			otChange200.execute(()=>{
 				remoteme.getVariables().setSmallInteger3(prop.name,sliders[0].val(),sliders[1].val(),sliders[2].val());
 			});
 
@@ -997,7 +997,7 @@ function addJoystick(selector){
 
 	var touch=new Touch(selector,xMin,xMax,yMin,yMax,(x,y)=>{
 
-		otChange.executeWithId(prop.name+"SmallInteger2",()=>{
+		otChange200.executeWithId(prop.name+"SmallInteger2",()=>{
 			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
 		});
 
@@ -1042,7 +1042,7 @@ function addCameraMouseTracking(selector){
 			x=Math.min(1,Math.max(-1,x));
 			y=Math.min(1,Math.max(-1,y));
 
-			otChange.executeWithId(prop.name+"SmallInteger2",()=>{
+			otChange200.executeWithId(prop.name+"SmallInteger2",()=>{
 				let xS=Math.round(getProportional(xMin,xMax,x));
 				let yS=Math.round(getProportional(yMin,yMax,y));
 				remoteme.getVariables().setSmallInteger2(prop.name,xS,yS);
@@ -1325,7 +1325,7 @@ function addGyroscope(selector){
 	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
 
 	var gyroscope = new Gyroscope(xMin,xMax,yMin,yMax,xRange,yRange,xySwap,orientationSupport,(x,y,xN,yN)=>{
-		otChange.execute(()=>{
+		otChange300.execute(()=>{
 			element.html(prop.label+" "+nicePrint(xN)+" "+nicePrint(yN));
 
 			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
