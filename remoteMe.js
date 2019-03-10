@@ -16,6 +16,28 @@ ConnectingStatusEnum = {
 };
 
 
+class Guard{
+	constructor(name,messagesPer2s = 8) {
+		this.messagesPer2s=messagesPer2s;
+		this.name=name;
+		this.counter=0;
+		window.setInterval((thiz)=>{
+			thiz.counter=0;
+		},2000,this)
+	}
+
+	check(){
+		if (this.counter>this.messagesPer2s){
+			console.warn(`To many message send for ${this.name} in 2s limit is ${this.messagesPer2s}`);
+			return false;
+		}else{
+			this.counter++;
+			return true;
+		}
+	}
+
+}
+
 // Class: RemoteMe
 // A Main class to communicate with remoteMe system
 class RemoteMe {
@@ -70,8 +92,8 @@ class RemoteMe {
 		this.messageCounter = 0;
 		this.peerConnection;
 		this.variables = undefined;
-
-
+		this.webSocketGuard=new Guard(8);
+		this.restGuard=new Guard(6);
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
@@ -203,53 +225,60 @@ class RemoteMe {
 
 
 	sendWebSocket(bytearrayBuffer) {
-		if (this.isWebSocketConnected()) {
-			if (bytearrayBuffer instanceof RemoteMeData) {
-				bytearrayBuffer = bytearrayBuffer.getBufferArray();
-			}
+		if (this.webSocketGuard.check()){
+			if (this.isWebSocketConnected()) {
+				if (bytearrayBuffer instanceof RemoteMeData) {
+					bytearrayBuffer = bytearrayBuffer.getBufferArray();
+				}
 
-			this.webSocket.send(bytearrayBuffer);
-			return true;
-		} else {
-			this.log("websocket is not opened");
-			return false;
+				this.webSocket.send(bytearrayBuffer);
+				return true;
+			} else {
+				this.log("websocket is not opened");
+				return false;
+			}
 		}
 	}
 
 
 	sendRest(bytearrayBuffer) {
-		if (bytearrayBuffer instanceof RemoteMeData) {
-			bytearrayBuffer = bytearrayBuffer.getBufferArray();
-		}
-		var url = this.getRestUrl() + "message/sendMessage/";
-		var xhttp = new XMLHttpRequest();
-		xhttp.responseType = "arraybuffer";
-		xhttp.open("POST", url, true);
-		xhttp.setRequestHeader("Content-type", "text/plain");
+		if (this.restGuard.check()){
+			if (bytearrayBuffer instanceof RemoteMeData) {
+				bytearrayBuffer = bytearrayBuffer.getBufferArray();
+			}
+			var url = this.getRestUrl() + "message/sendMessage/";
+			var xhttp = new XMLHttpRequest();
+			xhttp.responseType = "arraybuffer";
+			xhttp.open("POST", url, true);
+			xhttp.setRequestHeader("Content-type", "text/plain");
 
-		xhttp.send(bytearrayBuffer);
+			xhttp.send(bytearrayBuffer);
+		}
+
 
 
 	}
 
 	sendRestSync(bytearrayBuffer, reponseFunction) {
-		var url = this.getRestUrl() + "message/sendSyncMessage/";
-		var xhttp = new XMLHttpRequest();
-		xhttp.responseType = "arraybuffer";
+		if (this.restGuard.check()) {
+			var url = this.getRestUrl() + "message/sendSyncMessage/";
+			var xhttp = new XMLHttpRequest();
+			xhttp.responseType = "arraybuffer";
 
-		xhttp.addEventListener("load", function () {
-			if (this.status == 200) {
+			xhttp.addEventListener("load", function () {
+				if (this.status == 200) {
 
-				reponseFunction(this.response);
-			} else {
-				console.error("erro while getting sync reponse " + this.statusText);
-			}
+					reponseFunction(this.response);
+				} else {
+					console.error("erro while getting sync reponse " + this.statusText);
+				}
 
-		});
+			});
 
-		xhttp.open("POST", url, true);
-		xhttp.setRequestHeader("Content-type", "text/plain");
-		xhttp.send(bytearrayBuffer);
+			xhttp.open("POST", url, true);
+			xhttp.setRequestHeader("Content-type", "text/plain");
+			xhttp.send(bytearrayBuffer);
+		}
 
 	}
 
