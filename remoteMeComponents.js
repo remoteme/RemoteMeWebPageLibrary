@@ -1,7 +1,7 @@
 
 var id=0;
 var otChange200= new OperationTimer(200);
-var otChange300= new OperationTimer(200);
+
 
 function getProportional(min,max,x){
 	return (min+max+x*(max-min))/2;
@@ -83,36 +83,75 @@ class Gyroscope{
 				let beta=e.beta;
 				let gamma=e.gamma;
 
-				if (!thiz.previousRotMat) {
-					thiz.previousRotMat = glMatrix.mat3.create();
-					thiz.currentRotMat = glMatrix.mat3.create();
-					thiz.relativeRotationDelta = glMatrix.mat3.create();
-					thiz.inverseMat= glMatrix.mat3.create();
+
+				if (thiz.checkDiff(alpha,beta,gamma)){
+					if (!thiz.previousRotMat) {
+						thiz.previousRotMat = glMatrix.mat3.create();
+						thiz.currentRotMat = glMatrix.mat3.create();
+						thiz.relativeRotationDelta = glMatrix.mat3.create();
+						thiz.inverseMat= glMatrix.mat3.create();
+						thiz.fromOrientation(thiz.currentRotMat, alpha * deg2rad, beta * deg2rad, gamma * deg2rad);
+
+						// save last orientation
+						glMatrix.mat3.copy(thiz.previousRotMat, thiz.currentRotMat);
+						// get rotation in the previous orientation coordinate
+					}
+
 					thiz.fromOrientation(thiz.currentRotMat, alpha * deg2rad, beta * deg2rad, gamma * deg2rad);
 
-					// save last orientation
-					glMatrix.mat3.copy(thiz.previousRotMat, thiz.currentRotMat);
-					// get rotation in the previous orientation coordinate
+					glMatrix.mat3.transpose(thiz.inverseMat, thiz.previousRotMat); // for rotation matrix, inverse is transpose
+
+
+					glMatrix.mat3.multiply(thiz.relativeRotationDelta, thiz.currentRotMat, thiz.inverseMat);
+
+					// add the angular deltas to the cummulative rotation
+					let x1 = Math.asin(thiz.relativeRotationDelta[6]) / deg2rad;
+					let x2 = Math.asin(thiz.relativeRotationDelta[7]) / deg2rad;
+
+					thiz.onMoveEvent(x1,x2);
 				}
 
-				thiz.fromOrientation(thiz.currentRotMat, alpha * deg2rad, beta * deg2rad, gamma * deg2rad);
-
-				glMatrix.mat3.transpose(thiz.inverseMat, thiz.previousRotMat); // for rotation matrix, inverse is transpose
 
 
-				glMatrix.mat3.multiply(thiz.relativeRotationDelta, thiz.currentRotMat, thiz.inverseMat);
-
-				// add the angular deltas to the cummulative rotation
-				let x1 = Math.asin(thiz.relativeRotationDelta[6]) / deg2rad;
-				let x2 = Math.asin(thiz.relativeRotationDelta[7]) / deg2rad;
-
-				thiz.onMoveEvent(x1,x2);
 			}
 
 		});
 
 	}
 
+	checkDiff(alpha,beta,gamma){
+		if (this.lastSend==undefined){
+
+			this.lastAlpha=1000;
+			this.lastBeta=1000;
+			this.lastGamma=1000;
+			this.lastSend=0;
+		}
+
+
+		let diff1=Math.abs(this.lastAlpha-alpha);
+		let diff2=Math.abs(this.lastBeta-beta);
+		let diff3=Math.abs(this.lastGamma-gamma);
+
+
+
+		let now=new Date().getTime();
+		if ((now-this.lastSend>1000) || diff1>2 || diff2>2 || diff3>2){
+			this.lastAlpha=alpha;
+			this.lastBeta=beta;
+			this.lastGamma=gamma;
+			this.lastSend=now;
+			return true;
+		}else{
+			return false;
+		}
+
+
+	/*	this.lastAlpha=1000;
+		this.lastBeta=1000;
+		this.lastGamma=1000;*/
+
+	}
 	normalize(a){
 		var zn=1;
 		if (a<0){
@@ -1325,7 +1364,7 @@ function addGyroscope(selector){
 	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
 
 	var gyroscope = new Gyroscope(xMin,xMax,yMin,yMax,xRange,yRange,xySwap,orientationSupport,(x,y,xN,yN)=>{
-		otChange300.execute(()=>{
+		otChange200.execute(()=>{
 			element.html(prop.label+" "+nicePrint(xN)+" "+nicePrint(yN));
 
 			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
