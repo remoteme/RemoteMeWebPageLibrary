@@ -17,15 +17,15 @@ ConnectingStatusEnum = {
 
 
 class Guard{
-	constructor(name,messagesPer4s = 16) {
-		this.messagesPer4s=messagesPer4s;
+	constructor(name,messagesPer2s = 16) {
+		this.messagesPer2s=messagesPer2s;
 		this.name=name;
 		this.counter=0;
 		window.setInterval((thiz)=>{
-			console.debug(`messaages ${thiz.counter} ${thiz.messagesPer4s}`);
-			if (thiz.counter>1.5*thiz.messagesPer4s){
+			console.debug(`messaages ${thiz.counter} ${thiz.messagesPer2s}`);
+			if (thiz.counter>1.5*thiz.messagesPer2s){
 				console.debug(`Message flood waiting to end`);
-				thiz.counter=Math.floor(1.2*thiz.messagesPer4s);//flood
+				thiz.counter=Math.floor(1.2*thiz.messagesPer2s);//flood
 			}else{
 				console.debug(`cleard counter`);
 				thiz.counter=0;
@@ -39,8 +39,8 @@ class Guard{
 	check(){
 
 		this.counter++;
-		if (this.counter>this.messagesPer4s){
-			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer4s}`);
+		if (this.counter>this.messagesPer2s){
+			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer2s}`);
 			return false;
 		}else{
 			console.debug(`Send OK`);
@@ -104,8 +104,8 @@ class RemoteMe {
 		this.messageCounter = 0;
 		this.peerConnection;
 		this.variables = undefined;
-		this.webSocketGuard=new Guard(15);
-		this.restGuard=new Guard(10);
+		this.webSocketGuard=new Guard(6);
+		this.restGuard=new Guard(4);
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {

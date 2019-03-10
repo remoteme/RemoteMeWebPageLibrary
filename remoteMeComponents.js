@@ -1,6 +1,6 @@
 
 var id=0;
-var otChange200= new OperationTimer(150);
+var otChange200= new OperationTimer(200);
 
 
 function getProportional(min,max,x){
