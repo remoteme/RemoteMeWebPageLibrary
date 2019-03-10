@@ -17,21 +17,27 @@ ConnectingStatusEnum = {
 
 
 class Guard{
-	constructor(name,messagesPer2s = 8) {
+	constructor(name,messagesPer2s = 16) {
 		this.messagesPer2s=messagesPer2s;
 		this.name=name;
 		this.counter=0;
 		window.setInterval((thiz)=>{
-			thiz.counter=0;
-		},2000,this)
+			if (thiz.counter>4*messagesPer2s){
+				thiz.counter=messagesPer2s;//flood
+			}else{
+				thiz.counter=0;
+			}
+
+		},5000,this)
 	}
 
 	check(){
+
+		this.counter++;
 		if (this.counter>this.messagesPer2s){
-			console.warn(`To many message send for ${this.name} in 2s limit is ${this.messagesPer2s}`);
+			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer2s}`);
 			return false;
 		}else{
-			this.counter++;
 			return true;
 		}
 	}
