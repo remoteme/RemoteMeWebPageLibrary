@@ -17,25 +17,27 @@ ConnectingStatusEnum = {
 
 
 class Guard{
-	constructor(name,messagesPer2s = 16) {
-		this.messagesPer2s=messagesPer2s;
+	constructor(name,messagesPer5s = 16) {
+		this.messagesPer5s=messagesPer5s;
 		this.name=name;
 		this.counter=0;
 		window.setInterval((thiz)=>{
-			if (thiz.counter>4*messagesPer2s){
-				thiz.counter=messagesPer2s;//flood
+			if (thiz.counter>4*messagesPer5s){
+				thiz.counter=messagesPer5s;//flood
 			}else{
 				thiz.counter=0;
 			}
 
 		},5000,this)
 	}
-
+	clear(){
+		this.counter=0;
+	}
 	check(){
 
 		this.counter++;
-		if (this.counter>this.messagesPer2s){
-			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer2s}`);
+		if (this.counter>this.messagesPer5s){
+			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer5s}`);
 			return false;
 		}else{
 			return true;
@@ -98,8 +100,8 @@ class RemoteMe {
 		this.messageCounter = 0;
 		this.peerConnection;
 		this.variables = undefined;
-		this.webSocketGuard=new Guard(8);
-		this.restGuard=new Guard(6);
+		this.webSocketGuard=new Guard(20);
+		this.restGuard=new Guard(10);
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
@@ -167,7 +169,7 @@ class RemoteMe {
 		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
 		this.webSocket.binaryType = "arraybuffer";
 		this.webSocket.onopen = ((event) => {
-
+			this.webSocketGuard.clear();
 			this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
 			if (this.pingWebSocketTimer !== undefined) {
 				window.clearTimeout(this.pingWebSocketTimer);
@@ -176,6 +178,7 @@ class RemoteMe {
 				var ret = new RemoteMeData(4);
 				ret.putShort(0);
 				ret.putShort(0);
+				this.webSocketGuard.clear();
 				this.sendWebSocket(ret.getBufferArray());
 			}).bind(this), 60000);
 
@@ -186,6 +189,7 @@ class RemoteMe {
 
 		this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
 		this.webSocket.onclose = ((event) => {
+			this.webSocketGuard.clear();
 			window.clearTimeout(this.pingWebSocketTimer);
 			this.pingWebSocketTimer = undefined;
 			this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
@@ -459,11 +463,13 @@ class RemoteMe {
 
 
 	restartWebRTC() {
+		this.webSocketGuard.clear();
 		this.disconnectWebRTC();
 		this.connectWebRTC();
 	}
 
 	onOffWebRTC() {
+		this.webSocketGuard.clear();
 		if (this.isWebRTCConnected()) {
 			this.disconnectWebRTC();
 		} else {
@@ -472,6 +478,7 @@ class RemoteMe {
 	}
 
 	connectWebRTC() {
+		this.webSocketGuard.clear();
 		if (!this.isWebSocketConnected()) {
 			console.error("websocket is not connected cannot create webrtc connection");
 			return;
