@@ -17,14 +17,17 @@ ConnectingStatusEnum = {
 
 
 class Guard{
-	constructor(name,messagesPer5s = 16) {
-		this.messagesPer5s=messagesPer5s;
+	constructor(name,messagesPer4s = 16) {
+		this.messagesPer4s=messagesPer4s;
 		this.name=name;
 		this.counter=0;
 		window.setInterval((thiz)=>{
-			if (thiz.counter>4*messagesPer5s){
-				thiz.counter=messagesPer5s;//flood
+			console.debug(`messaages ${thiz.counter} ${thiz.messagesPer4s}`);
+			if (thiz.counter>1.5*thiz.messagesPer4s){
+				console.debug(`Message flood waiting to end`);
+				thiz.counter=Math.floor(1.2*thiz.messagesPer4s);//flood
 			}else{
+				console.debug(`cleard counter`);
 				thiz.counter=0;
 			}
 
@@ -36,10 +39,11 @@ class Guard{
 	check(){
 
 		this.counter++;
-		if (this.counter>this.messagesPer5s){
-			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer5s}`);
+		if (this.counter>this.messagesPer4s){
+			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer4s}`);
 			return false;
 		}else{
+			console.debug(`Send OK`);
 			return true;
 		}
 	}
@@ -100,7 +104,7 @@ class RemoteMe {
 		this.messageCounter = 0;
 		this.peerConnection;
 		this.variables = undefined;
-		this.webSocketGuard=new Guard(20);
+		this.webSocketGuard=new Guard(15);
 		this.restGuard=new Guard(10);
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
