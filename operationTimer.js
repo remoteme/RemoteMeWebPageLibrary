@@ -5,7 +5,7 @@
 class OperationTimer {
 
 
-	constructor(defaultDelay=200) {
+	constructor(defaultDelay=150) {
 		this.toExecute = [];
 		this.executeDelay = [];
 		this.timers = [];
