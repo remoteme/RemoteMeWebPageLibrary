@@ -22,12 +22,11 @@ class Guard{
 		this.name=name;
 		this.counter=0;
 		window.setInterval((thiz)=>{
-			console.debug(`messaages ${thiz.counter} ${thiz.messagesPer2s}`);
-			if (thiz.counter>1.5*thiz.messagesPer2s){
-				console.debug(`Message flood waiting to end`);
+				if (thiz.counter>1.5*thiz.messagesPer2s){
+
 				thiz.counter=Math.floor(1.2*thiz.messagesPer2s);//flood
 			}else{
-				console.debug(`cleard counter`);
+
 				thiz.counter=0;
 			}
 
@@ -40,10 +39,8 @@ class Guard{
 
 		this.counter++;
 		if (this.counter>this.messagesPer2s){
-			console.warn(`To many message send for ${this.name} in 5s limit is ${this.messagesPer2s}`);
 			return false;
 		}else{
-			console.debug(`Send OK`);
 			return true;
 		}
 	}
