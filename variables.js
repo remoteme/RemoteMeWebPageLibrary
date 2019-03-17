@@ -4,6 +4,30 @@ class ToSend {
 		this.type = 0;
 		this.name = "";
 		this.values = [];
+		this.directOnly=false;
+		this.hash=undefined;
+	}
+
+	isDirectOnly(){
+		return this.directOnly;
+	}
+	getHash(){
+		if (this.hash==undefined){
+			let s= this.type+this.name+this.values.length;
+			var a = 1, c = 0, h, o;
+			if (s) {
+				a = 0;
+				/*jshint plusplus:false bitwise:false*/
+				for (h = s.length - 1; h >= 0; h--) {
+					o = s.charCodeAt(h);
+					a = (a<<6&268435455) + o + (o<<14);
+					c = a & 266338304;
+					a = c!==0?a^c>>21:a;
+				}
+			}
+			this.hash= a;
+		}
+		return this.hash;
 	}
 
 	getSize() {
@@ -194,46 +218,48 @@ class Variables {
 	}
 
 
-	setBoolean(name, value) {
-		this.set(name, VariableOberverType.BOOLEAN, [value]);
+	setBoolean(name, value,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.BOOLEAN, [value],onlyDirectChannelsIfAny);
 	}
 
-	setInteger(name, value) {
-		this.set(name, VariableOberverType.INTEGER, [value]);
+	setInteger(name, value,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.INTEGER, [value],onlyDirectChannelsIfAny);
 	}
 
-	setText(name, value) {
-		this.set(name, VariableOberverType.TEXT, [value]);
+	setText(name, value,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.TEXT, [value],onlyDirectChannelsIfAny);
 	}
 
-	setSmallInteger3(name, value, value2, value3) {
-		this.set(name, VariableOberverType.SMALL_INTEGER_3, [Math.round(value), Math.round(value2), Math.round(value3)]);
+	setSmallInteger3(name, value, value2, value3,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.SMALL_INTEGER_3, [Math.round(value), Math.round(value2), Math.round(value3)],onlyDirectChannelsIfAny);
 	}
 
-	setSmallInteger2(name, value, value2) {
-		this.set(name, VariableOberverType.SMALL_INTEGER_2, [value, value2]);
+	setSmallInteger2(name, value, value2,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.SMALL_INTEGER_2, [value, value2],onlyDirectChannelsIfAny);
 	}
 
-	setIntegerBoolean(name, value, value2) {
-		this.set(name, VariableOberverType.INTEGER_BOOLEAN, [value, value2]);
+	setIntegerBoolean(name, value, value2,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.INTEGER_BOOLEAN, [value, value2],onlyDirectChannelsIfAny);
 	}
 
-	setDouble(name, value) {
-		this.set(name, VariableOberverType.DOUBLE, [value]);
+	setDouble(name, value,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.DOUBLE, [value],onlyDirectChannelsIfAny);
 	}
 
 
-	setText2(name, value, value2) {
-		this.set(name, VariableOberverType.TEXT_2, [value, value2]);
+	setText2(name, value, value2,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.TEXT_2, [value, value2],onlyDirectChannelsIfAny);
 	}
-	setSmallInteger2Text2(name, value, value2,value3,value4) {
-		this.set(name, VariableOberverType.SMALL_INTEGER_2_TEXT_2, [value, value2,value3,value4]);
+	setSmallInteger2Text2(name, value, value2,value3,value4,onlyDirectChannelsIfAny = false) {
+		this.set(name, VariableOberverType.SMALL_INTEGER_2_TEXT_2, [value, value2,value3,value4],onlyDirectChannelsIfAny);
 	}
-	set(name, type, values) {
+
+	set(name, type, values,onlyDirectChannelsIfAny = false) {
 		var current = new ToSend();
 		current.name = name;
 		current.type = type;
 		current.values = values;
+		current.directOnly=onlyDirectChannelsIfAny;
 		this.toSend.push(current);
 
 		if (this.sendNow) {
@@ -281,10 +307,12 @@ class Variables {
 	}
 
 	_sendNow() {
-
+		if (this.toSend.length==0){
+			return;
+		}
 
 		var ignoreDeviceId = [];
-
+		var ignoreHashes=[];
 
 		this.remoteMe.directWebSocket.forEach(webSocket => {
 			let toSend=this.filter(this.toSend, webSocket.variables);
@@ -292,6 +320,11 @@ class Variables {
 			if (toSend.length>0) {
 				this.remoteMe.sendDirectWebsocket(webSocket.deviceId, this._getPropagateMessage(webSocket.deviceId,toSend));
 				ignoreDeviceId.push(webSocket.deviceId);
+				for (let current of this.toSend) {
+					if (current.isDirectOnly()){
+						ignoreHashes.push(current.getHash());
+					}
+				}
 			}
 		});
 
@@ -299,13 +332,32 @@ class Variables {
 		if (this.remoteMe.isWebRTCConnected()) {
 			this.remoteMe.sendWebRtc(this._getPropagateMessage(raspberryPiDeviceId,this.toSend));
 			ignoreDeviceId.push(raspberryPiDeviceId);
+			for (let current of this.toSend) {
+				if (current.isDirectOnly()){
+					ignoreHashes.push(current.getHash());
+				}
+			}
 		}
 
 
 
+		let toSend=[];
+		for (let current of this.toSend) {
+			if (ignoreHashes.length==0 || ignoreHashes.indexOf(current.getHash())==-1){
+				toSend.push(current);
+			}
+
+		}
+
+		this.toSend = [];
+
+		if (toSend.length==0){
+			return;
+		}
+
 		var size = 2 + 2 + 1 + ignoreDeviceId.length * 2;
 
-		for (let current of this.toSend) {
+		for (let current of toSend) {
 			size += current.getSize();
 		}
 		var ret = new RemoteMeData(4 + size);
@@ -320,9 +372,9 @@ class Variables {
 
 
 
-		ret.putShort(this.toSend.length);
+		ret.putShort(toSend.length);
 
-		for (let current of this.toSend) {
+		for (let current of toSend) {
 			current.serialize(ret);
 		}
 
@@ -332,7 +384,6 @@ class Variables {
 			this.remoteMe.sendRest(ret);
 		}
 
-		this.toSend = [];
 
 
 	}

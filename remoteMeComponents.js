@@ -632,7 +632,7 @@ function addXSliders(selector,count){
 	var prop = readProperties(selector);
 
 	var valueBox=getBoolean("valueBox",$(selector),true);
-
+	var onlyDirect=getBoolean("onlyDirect",$(selector),false);
 
 	var box= $(`<div class="box"><p>${prop.label}</p></div>`);
 	var sliders=[];
@@ -663,21 +663,21 @@ function addXSliders(selector,count){
 	if (count ==1){
 		onChange =(()=> {
 			otChange200.execute(()=>{
-				remoteme.getVariables().setInteger(prop.name,sliders[0].val());
+				remoteme.getVariables().setInteger(prop.name,sliders[0].val(),onlyDirect);
 			});
 
 		});
 	}else if (count ==2){
 		onChange =(()=> {
 			otChange200.execute(()=>{
-				remoteme.getVariables().setSmallInteger2(prop.name,sliders[0].val(),sliders[1].val());
+				remoteme.getVariables().setSmallInteger2(prop.name,sliders[0].val(),sliders[1].val(),onlyDirect);
 			});
 
 		});
 	}else if (count ==3){
 		onChange =(()=> {
 			otChange200.execute(()=>{
-				remoteme.getVariables().setSmallInteger3(prop.name,sliders[0].val(),sliders[1].val(),sliders[2].val());
+				remoteme.getVariables().setSmallInteger3(prop.name,sliders[0].val(),sliders[1].val(),sliders[2].val(),onlyDirect);
 			});
 
 		});
@@ -1008,6 +1008,7 @@ function addJoystick(selector){
 	var xMax=getInteger("xMax",$(selector),100);
 	var yMin=getInteger("yMin",$(selector),-100);
 	var yMax=getInteger("yMax",$(selector),100);
+	var onlyDirect=getBoolean("onlyDirect",$(selector),false);
 
 
 	if ($(selector).attr( "xRange" )!=undefined){
@@ -1037,7 +1038,7 @@ function addJoystick(selector){
 	var touch=new Touch(selector,xMin,xMax,yMin,yMax,(x,y)=>{
 
 		otChange200.executeWithId(prop.name+"SmallInteger2",()=>{
-			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
+			remoteme.getVariables().setSmallInteger2(prop.name,x,y,onlyDirect);
 		});
 
 	});
@@ -1058,6 +1059,7 @@ function addCameraMouseTracking(selector){
 
 	var requiredMouseDown=getBoolean("requiredMouseDown",$(selector),true);
 	var reset=getBoolean("reset",$(selector),true);
+	var onlyDirect=getBoolean("onlyDirect",$(selector),false);
 
 
 
@@ -1076,7 +1078,7 @@ function addCameraMouseTracking(selector){
 	let video = $("video");
 	if (video.get(0)!=undefined){
 
-		var sendNow =(x,y)=>{
+		var sendNow =(x,y,onlyDirect)=>{
 
 			x=Math.min(1,Math.max(-1,x));
 			y=Math.min(1,Math.max(-1,y));
@@ -1084,7 +1086,7 @@ function addCameraMouseTracking(selector){
 			otChange200.executeWithId(prop.name+"SmallInteger2",()=>{
 				let xS=Math.round(getProportional(xMin,xMax,x));
 				let yS=Math.round(getProportional(yMin,yMax,y));
-				remoteme.getVariables().setSmallInteger2(prop.name,xS,yS);
+				remoteme.getVariables().setSmallInteger2(prop.name,xS,yS,onlyDirect);
 				console.info(xS+" "+yS);
 			});
 
@@ -1100,7 +1102,7 @@ function addCameraMouseTracking(selector){
 				let x=(ox/width-0.5)*2;
 				let y=-(oy/height-0.5)*2;
 
-				sendNow(x,y);
+				sendNow(x,y,onlyDirect);
 			}
 
 		});
@@ -1117,12 +1119,12 @@ function addCameraMouseTracking(selector){
 			let x=(ox/width-0.5)*2;
 			let y=-(oy/height-0.5)*2;
 
-			sendNow(x,y);
+			sendNow(x,y,onlyDirect);
 		});
 
 		if (reset){
 			video.on("touchend mouseup",e=>{
-				sendNow(0,0);
+				sendNow(0,0,onlyDirect);
 			});
 		}
 	}
@@ -1342,6 +1344,7 @@ function addGyroscope(selector){
 	var xRange=getInteger("xRange",$(selector),20);
 	var yRange=getInteger("yRange",$(selector),20);
 
+	var onlyDirect=getBoolean("onlyDirect",$(selector),false);
 
 	var xySwap=getBoolean("xySwap",$(selector),false);
 	var orientationSupport=getBoolean("orientationSupport",$(selector),false);
@@ -1367,7 +1370,7 @@ function addGyroscope(selector){
 		otChange200.execute(()=>{
 			element.html(prop.label+" "+nicePrint(xN)+" "+nicePrint(yN));
 
-			remoteme.getVariables().setSmallInteger2(prop.name,x,y);
+			remoteme.getVariables().setSmallInteger2(prop.name,x,y,onlyDirect);
 		});
 	});
 

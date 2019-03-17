@@ -39,6 +39,7 @@ class Guard{
 
 		this.counter++;
 		if (this.counter>this.messagesPer2s){
+			console.warn(name+`reach maximum in 5 second period period limit is ${this.messagesPer2s}  already send ${this.counter}`);
 			return false;
 		}else{
 			return true;
