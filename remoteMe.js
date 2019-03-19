@@ -17,20 +17,20 @@ ConnectingStatusEnum = {
 
 
 class Guard{
-	constructor(name,messagesPer2s = 16) {
-		this.messagesPer2s=messagesPer2s;
+	constructor(name,messagesPer3s = 5) {
+		this.messagesPer3s=messagesPer3s;
 		this.name=name;
 		this.counter=0;
 		window.setInterval((thiz)=>{
-				if (thiz.counter>1.5*thiz.messagesPer2s){
+				if (thiz.counter>1.5*thiz.messagesPer3s){
 
-				thiz.counter=Math.floor(1.2*thiz.messagesPer2s);//flood
+				thiz.counter=Math.floor(1.2*thiz.messagesPer3s);//flood
 			}else{
 
 				thiz.counter=0;
 			}
 
-		},5000,this)
+		},3000,this)
 	}
 	clear(){
 		this.counter=0;
@@ -38,8 +38,8 @@ class Guard{
 	check(){
 
 		this.counter++;
-		if (this.counter>this.messagesPer2s){
-			console.warn(name+`reach maximum in 5 second period period limit is ${this.messagesPer2s}  already send ${this.counter}`);
+		if (this.counter>this.messagesPer3s){
+			console.warn(name+`reach maximum in 5 second period period limit is ${this.messagesPer3s}  already send ${this.counter}`);
 			return false;
 		}else{
 			return true;
@@ -102,8 +102,8 @@ class RemoteMe {
 		this.messageCounter = 0;
 		this.peerConnection;
 		this.variables = undefined;
-		this.webSocketGuard=new Guard(6);
-		this.restGuard=new Guard(4);
+		this.webSocketGuard=new Guard("websocket send",12);
+		this.restGuard=new Guard("rest guard",8);
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
