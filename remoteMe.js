@@ -316,8 +316,8 @@ class RemoteMe {
 		return this.sendUserSyncMessageByFasterChannel(receiveDeviceId, data, responseFunction);
 	}
 
-	sendWebRTCConnectionStatusChangeMessage(webPageDeviceId, rasbperryPiDeviceId, status) {
-		this.sendWebSocket(getWebRTCConnectionStatusChangeMessage(webPageDeviceId, rasbperryPiDeviceId, status));
+	sendWebRTCConnectionStatusChangeMessage(webPageDeviceId, raspberryPiDeviceId, status) {
+		this.sendWebSocket(getWebRTCConnectionStatusChangeMessage(webPageDeviceId, raspberryPiDeviceId, status));
 	}
 
 	sendWebSocketText(text) {
@@ -486,7 +486,7 @@ class RemoteMe {
 			return;
 		}
 		if (raspberryPiDeviceId==0) {
-			console.error("no rasbperrypi device");
+			console.error("no raspberrypi device");
 			return;
 		}
 		this.onWebRtcConnectionChange(ConnectingStatusEnum.CONNECTING);

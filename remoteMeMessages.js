@@ -282,7 +282,7 @@ function getUserMessage( userMessageSettings, receiverDeviceId,senderDeviceId, m
 
 }
 
-function getWebRTCConnectionStatusChangeMessage(webPageDeviceId, rasbperryPiDeviceId, status) {
+function getWebRTCConnectionStatusChangeMessage(webPageDeviceId, raspberryPiDeviceId, status) {
 
 
 
@@ -295,7 +295,7 @@ function getWebRTCConnectionStatusChangeMessage(webPageDeviceId, rasbperryPiDevi
 
 	ret.putByte(status);
 	ret.putShort(webPageDeviceId);
-	ret.putShort(rasbperryPiDeviceId);
+	ret.putShort(raspberryPiDeviceId);
 
 
 	return ret.getBufferArray();
