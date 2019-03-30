@@ -96,6 +96,8 @@ class RemoteMe {
 
 		this.directWebSocket = [];
 
+		this.turnOffWebSocketReconnect=false;
+
 		this.pingWebSocketTimer;
 		this.remoteMeConfig;
 		this.webSocket;
@@ -115,6 +117,12 @@ class RemoteMe {
 
 		if (this.remoteMeConfig.automaticlyConnectWS) {
 			this.connectWebSocket();
+			window.setInterval((function () {
+				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect){
+					this.connectWebSocket();
+				}
+			}).bind(this), 1000);
+
 		}
 
 		window.onbeforeunload = function (event) {
@@ -164,6 +172,7 @@ class RemoteMe {
 
 	connectWebSocket() {
 		setTimeout(() => this._connectWebSocketNow(), 300);//so everything is registered and ready
+		this.webSocketOffManually=false;
 	}
 
 	_connectWebSocketNow() {
@@ -205,7 +214,7 @@ class RemoteMe {
 
 	restartWebSocket() {
 		if (this.isWebSocketConnected()) {
-			this.disconnectWebSocket();
+			this.disconnectWebSocket(false);
 			setTimeout(this.connectWebSocket.bind(this), 1000);
 		} else {
 			this.connectWebSocket();
@@ -228,9 +237,10 @@ class RemoteMe {
 	}
 
 
-	disconnectWebSocket() {
+	disconnectWebSocket(turnOffWebSocketReconnect=true) {
 		if (this.isWebSocketConnected()) {
 			this.webSocket.close();
+			this.turnOffWebSocketReconnect=turnOffWebSocketReconnect;
 		}
 		this.webSocket = undefined;
 
