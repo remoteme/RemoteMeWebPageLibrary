@@ -1125,7 +1125,7 @@ function addDeviceConnectionStatus(selector) {
 
 	var box = $(`<div class='deviceStatusIcons'></div>`);
 
-	let icon = $(`<i class='material-icons'>av_timer</i>`);
+	let icon = $(`<i class='material-icons'>link_off</i>`);
 	let cnt = $(`<div class='disconnected'></div>`);
 	icon.click(remoteme.onOffWebSocket.bind(remoteme));
 	cnt.append(icon);
