@@ -147,6 +147,29 @@
     background: radial-gradient(circle at 15px 15px, rgba(255, 64, 129, 0.51),rgb(255,64,129),rgb(255,64,129), rgb(176, 45, 88));
 }
 
+
+
+
+.deviceStatusIcons:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.deviceStatusIcons div.connected{
+    color: #00c900;
+}
+
+.deviceStatusIcons i.material-icons{
+    float: left;
+    margin-right: 9px;
+}
+.deviceStatusIcons i.text{
+    float: left;
+}
+.deviceStatusIcons div.disconnected{
+    color: #717171;
+}
+
 .statusIcons{
     position:absolute;
     top:0px;

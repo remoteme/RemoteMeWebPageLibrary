@@ -83,6 +83,7 @@ class RemoteMe {
 			automaticlyConnectWS: true,
 			automaticlyConnectWebRTC: false,
 			webSocketConnectionChange: [],
+			deviceConnectionChange:[],
 			directConnectionChange: [],
 			webRtcConnectionChange: [],
 			remoteVideoElementId: "remoteVideo",
@@ -385,8 +386,8 @@ class RemoteMe {
 		if (ret.typeId == MessageType.USER_MESSAGE) {
 			ret.size = data.popInt16();
 			ret.renevalWhenFailTypeId = data.popByte();
-			ret.receiveDeviceId = data.popInt16();
-			ret.senderDeviceId = data.popInt16();
+			ret.receiveDeviceId = data.popUint16();
+			ret.senderDeviceId = data.popUint16();
 			ret.messageId = data.popInt16();
 
 			ret.data = data.popRestBuffer();
@@ -399,8 +400,8 @@ class RemoteMe {
 		} else if (ret.typeId == MessageType.USER_SYNC_MESSAGE) {
 			ret.size = data.popInt16();
 
-			ret.receiveDeviceId = data.popInt16();
-			ret.senderDeviceId = data.popInt16();
+			ret.receiveDeviceId = data.popUint16();
+			ret.senderDeviceId = data.popUint16();
 			ret.messageId = data.popInt64();
 
 			ret.data = data.popRestBuffer();
@@ -420,7 +421,7 @@ class RemoteMe {
 
 
 		} else if (ret.typeId == MessageType.SYNC_MESSAGE_RESPONSE) {
-			ret.size = data.popInt16();
+			ret.size = data.popUint16();
 
 			ret.messageId = data.popInt64();
 
@@ -440,6 +441,18 @@ class RemoteMe {
 
 		} else if (ret.typeId == MessageType.VARIABLE_CHANGE_MESSAGE) {
 			this.getVariables()._onObserverChangeMessage(data);
+
+		} else if (ret.typeId == MessageType.DEVICE_CONNECTION_CHANGE) {
+			let count=data.popUint16()/3;
+			while(count-->0){
+
+				let deviceId = data.popUint16();
+				let status=data.popByte()==1;
+				this.remoteMeConfig.deviceConnectionChange.forEach(x=>{
+					x(deviceId,status);
+				});
+			}
+
 
 		} else if (ret.typeId == 0) {
 			//ping
