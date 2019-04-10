@@ -93,6 +93,7 @@ class RemoteMe {
 			pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
 			mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}}
 		};
+		this.reconnectWebSocketAttempts=0;
 
 		this.directWebSocket = [];
 
@@ -118,10 +119,13 @@ class RemoteMe {
 		if (this.remoteMeConfig.automaticlyConnectWS) {
 			this.connectWebSocket();
 			window.setInterval((function () {
-				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect){
+				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this.reconnectWebSocketAttempts<20){
 					this.connectWebSocket();
+					console.info("attempts  "+this.reconnectWebSocketAttempts);
+					this.reconnectWebSocketAttempts++;
 				}
-			}).bind(this), 1000);
+
+			}).bind(this),3000);
 
 		}
 
@@ -181,6 +185,7 @@ class RemoteMe {
 		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
 		this.webSocket.binaryType = "arraybuffer";
 		this.webSocket.onopen = ((event) => {
+			this.reconnectWebSocketAttempts=0;
 			this.webSocketGuard.clear();
 			this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
 			if (this.pingWebSocketTimer !== undefined) {
