@@ -119,13 +119,13 @@ class RemoteMe {
 		if (this.remoteMeConfig.automaticlyConnectWS) {
 			this.connectWebSocket();
 			window.setInterval((function () {
-				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this.reconnectWebSocketAttempts<20){
+				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this.reconnectWebSocketAttempts<15){
 					this.connectWebSocket();
 					console.info("attempts  "+this.reconnectWebSocketAttempts);
 					this.reconnectWebSocketAttempts++;
 				}
 
-			}).bind(this),3000);
+			}).bind(this),4000);
 
 		}
 
