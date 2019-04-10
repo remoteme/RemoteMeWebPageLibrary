@@ -121,7 +121,7 @@ class RemoteMe {
 			window.setInterval((function () {
 				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this.reconnectWebSocketAttempts<15){
 					this.connectWebSocket();
-					console.info("attempts  "+this.reconnectWebSocketAttempts);
+					console.info("attempts  to reconnect websocket "+this.reconnectWebSocketAttempts);
 					this.reconnectWebSocketAttempts++;
 				}
 
