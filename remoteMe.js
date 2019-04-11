@@ -251,6 +251,14 @@ class RemoteMe {
 
 	}
 
+	send(bytearrayBuffer) {
+		if (this.isWebSocketConnected()) {
+			this.sendWebSocket(bytearrayBuffer);
+		} else {
+			this.sendRest(bytearrayBuffer);
+		}
+
+	}
 
 	sendWebSocket(bytearrayBuffer) {
 		if (this.webSocketGuard.check()){

@@ -2,7 +2,7 @@ VariableOberverType= {BOOLEAN:0,INTEGER:1,TEXT:2,SMALL_INTEGER_3:3,SMALL_INTEGER
 ChangeMessageSetting={ NO_RENEWAL:0,RENEWAL_IF_FAILED:1}
 
 MessageType = {USER_MESSAGE:100, USER_MESSAGE_DELIVER_STATUS:101,USER_SYNC_MESSAGE:102,
-	VARIABLE_CHANGE_MESSAGE:103, VARIABLE_CHANGE_PROPAGATE_MESSAGE:104,
+	VARIABLE_CHANGE_MESSAGE:103, VARIABLE_CHANGE_PROPAGATE_MESSAGE:104,SEND_PUSH_NOTIFICATION:105,
 	SYNC_MESSAGE:120, SYNC_MESSAGE_RESPONSE:121,
 	OBSERVER_REGISTER_MESSAGE:122,
 	REGISTER_DEVICE:200, REGISTER_CHILD_DEVICE:201,DEVICE_CONNECTION_CHANGE:202,
@@ -383,6 +383,41 @@ function getLogMessage(level,data){
 
 	return ret;
 }
+
+function getPushNotificationMessage(webPageDeviceId,title,body,badge,icon,image,vibrate=[]){
+
+	title=getArray(title);
+	body=getArray(body);
+	badge=getArray(badge);
+	icon=getArray(icon);
+	image=getArray(image);
+
+
+
+	size=2 +5+ title.length+ body.length+ image.length+ icon.length+ badge.length+1+vibrate.length;
+	pos=0;
+	var ret = new RemoteMeData(4+size);
+
+
+	ret.putUint16( MessageType.SEND_PUSH_NOTIFICATION);
+	ret.putUint16(size);
+	ret.putUint16( webPageDeviceId);
+	ret.putString( title);
+	ret.putString( body);
+	ret.putString( badge);
+	ret.putString( icon);
+	ret.putString( image);
+	ret.putUint8( vibrate.length);
+
+
+	for(let i=0;i<vibrate.length;i++){
+		ret.putUint8( vibrate[i]/10);
+	}
+
+
+	return ret;
+}
+
 
 //getAndroidMessage(128,"some title","body something","#009900",AndroidMessageSound.DEFAULT_SOUND,AndroidMessageIcon.BUNNY_ICON);
 function getAndroidMessage(receivedeviceId,title,body,color,sound,icon){
