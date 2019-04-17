@@ -1143,6 +1143,8 @@ function addDeviceConnectionStatus(selector) {
 
 	}
 
+	remoteme.subscribeEvent(EventSubscriberTypeEnum.DEVICE_CONNECTION);
+
 
 	replaceComponent(selector, box);
 

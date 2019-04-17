@@ -5,11 +5,16 @@ MessageType = {USER_MESSAGE:100, USER_MESSAGE_DELIVER_STATUS:101,USER_SYNC_MESSA
 	VARIABLE_CHANGE_MESSAGE:103, VARIABLE_CHANGE_PROPAGATE_MESSAGE:104,SEND_PUSH_NOTIFICATION:105,
 	SYNC_MESSAGE:120, SYNC_MESSAGE_RESPONSE:121,
 	OBSERVER_REGISTER_MESSAGE:122,
-	REGISTER_DEVICE:200, REGISTER_CHILD_DEVICE:201,DEVICE_CONNECTION_CHANGE:202,
+	REGISTER_DEVICE:200, REGISTER_CHILD_DEVICE:201,
 	ADD_DATA:300,
+
+	DEVICE_CONNECTION_CHANGE:301,
+	VARIABLE_SCHEDULER_STATE_CHANGE:302,
+
 	LOG:20000,
 	SYSTEM_MESSAGE:20001,
-	WEB_RTC_CONNECTION_CHANGE:20002
+	WEB_RTC_CONNECTION_CHANGE:20002,
+	EVENT_SUBSCRIBER:20003
 };
 
 WSUserMessageSettings = { NO_RENEWAL: 0, RENEWAL_IF_FAILED: 1};
@@ -384,6 +389,22 @@ function getLogMessage(level,data){
 	return ret;
 }
 
+
+function getEventSubscriberMessage(subscribeEvents=[]){
+	size=2*subscribeEvents.length;
+
+	var ret = new RemoteMeData(4+size);
+
+
+	ret.putUint16( MessageType.EVENT_SUBSCRIBER);
+	ret.putUint16(size);
+	for(let i=0;i<subscribeEvents.length;i++){
+		ret.putUint16( subscribeEvents[i]);
+	}
+
+	return ret;
+}
+
 function getPushNotificationMessage(webPageDeviceId,title,body,badge,icon,image,vibrate=[]){
 
 	title=getArray(title);
@@ -419,26 +440,6 @@ function getPushNotificationMessage(webPageDeviceId,title,body,badge,icon,image,
 }
 
 
-//getAndroidMessage(128,"some title","body something","#009900",AndroidMessageSound.DEFAULT_SOUND,AndroidMessageIcon.BUNNY_ICON);
-function getAndroidMessage(receivedeviceId,title,body,color,sound,icon){
-	size=stringToByteArray(title).length+1;
-	size+=stringToByteArray(body).length+1;
-	size+=3;//color
-	size+=2;//icon sound
-
-
-	var ret = new RemoteMeData(size);
-
-	ret.putString(title);
-	ret.putString(body);
-	ret.putArray(parseHexString(color.substring(1)));
-	ret.putByte(sound);
-	ret.putByte(icon);
-
-	return getUserMessage(WSUserMessageSettings.NO_RENEWAL,receivedeviceId,0,ret);
-
-
-}
 
 //getAddDataMessage(new Date().getTime(),AddDataMessageSetting._5S,[[1,123],[2,0.5]]);
 function getAddDataMessage(time,settings,dataSeries){

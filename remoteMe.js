@@ -14,8 +14,10 @@ ConnectingStatusEnum = {
 	DISCONNECTING: 4,
 	CHECKING: 5
 };
-
-
+EventSubscriberTypeEnum = {
+	DEVICE_CONNECTION: 0,
+	VARIABLE_SCHEDULER_STATUS: 50
+};
 
 
 class Guard{
@@ -95,7 +97,9 @@ class RemoteMe {
 			pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
 			mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}}
 		};
-		this.reconnectWebSocketAttempts=0;
+		this._reconnectWebSocketAttempts=0;
+
+		this._subscribedEvents=[];
 
 		this.directWebSocket = [];
 
@@ -108,8 +112,8 @@ class RemoteMe {
 		this.messageCounter = 0;
 		this.peerConnection;
 		this.variables = undefined;
-		this.webSocketGuard=new Guard("websocket send",12);
-		this.restGuard=new Guard("rest guard",8);
+		this._webSocketGuard=new Guard("websocket send",12);
+		this._restGuard=new Guard("rest guard",8);
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
@@ -121,10 +125,10 @@ class RemoteMe {
 		if (this.remoteMeConfig.automaticlyConnectWS) {
 			this.connectWebSocket();
 			window.setInterval((function () {
-				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this.reconnectWebSocketAttempts<15){
+				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this._reconnectWebSocketAttempts<15){
 					this.connectWebSocket();
-					console.info("attempts  to reconnect websocket "+this.reconnectWebSocketAttempts);
-					this.reconnectWebSocketAttempts++;
+					console.info("attempts  to reconnect websocket "+this._reconnectWebSocketAttempts);
+					this._reconnectWebSocketAttempts++;
 				}
 
 			}).bind(this),4000);
@@ -138,6 +142,18 @@ class RemoteMe {
 
 
 		}.bind(this);
+	}
+
+	subscribeEvent(eventId){
+		if (this._subscribedEvents.indexOf(eventId)==-1){
+			this._subscribedEvents.push(eventId);
+			if (this.isWebSocketConnected()){
+				this.sendWebSocket(getEventSubscriberMessage([eventId]));
+
+			}
+		}
+
+
 	}
 
 	getVariables() {
@@ -187,8 +203,8 @@ class RemoteMe {
 		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
 		this.webSocket.binaryType = "arraybuffer";
 		this.webSocket.onopen = ((event) => {
-			this.reconnectWebSocketAttempts=0;
-			this.webSocketGuard.clear();
+			this._reconnectWebSocketAttempts=0;
+			this._webSocketGuard.clear();
 			this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
 			if (this.pingWebSocketTimer !== undefined) {
 				window.clearTimeout(this.pingWebSocketTimer);
@@ -197,7 +213,7 @@ class RemoteMe {
 				var ret = new RemoteMeData(4);
 				ret.putShort(0);
 				ret.putShort(0);
-				this.webSocketGuard.clear();
+				this._webSocketGuard.clear();
 				this.sendWebSocket(ret.getBufferArray());
 			}).bind(this), 60000);
 
@@ -208,7 +224,7 @@ class RemoteMe {
 
 		this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
 		this.webSocket.onclose = ((event) => {
-			this.webSocketGuard.clear();
+			this._webSocketGuard.clear();
 			window.clearTimeout(this.pingWebSocketTimer);
 			this.pingWebSocketTimer = undefined;
 			this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
@@ -263,7 +279,7 @@ class RemoteMe {
 	}
 
 	sendWebSocket(bytearrayBuffer) {
-		if (this.webSocketGuard.check()){
+		if (this._webSocketGuard.check()){
 			if (this.isWebSocketConnected()) {
 				if (bytearrayBuffer instanceof RemoteMeData) {
 					bytearrayBuffer = bytearrayBuffer.getBufferArray();
@@ -280,7 +296,7 @@ class RemoteMe {
 
 
 	sendRest(bytearrayBuffer) {
-		if (this.restGuard.check()){
+		if (this._restGuard.check()){
 			if (bytearrayBuffer instanceof RemoteMeData) {
 				bytearrayBuffer = bytearrayBuffer.getBufferArray();
 			}
@@ -298,7 +314,7 @@ class RemoteMe {
 	}
 
 	sendRestSync(bytearrayBuffer, reponseFunction) {
-		if (this.restGuard.check()) {
+		if (this._restGuard.check()) {
 			var url = this.getRestUrl() + "message/sendSyncMessage/";
 			var xhttp = new XMLHttpRequest();
 			xhttp.responseType = "arraybuffer";
@@ -503,13 +519,13 @@ class RemoteMe {
 
 
 	restartWebRTC() {
-		this.webSocketGuard.clear();
+		this._webSocketGuard.clear();
 		this.disconnectWebRTC();
 		this.connectWebRTC();
 	}
 
 	onOffWebRTC() {
-		this.webSocketGuard.clear();
+		this._webSocketGuard.clear();
 		if (this.isWebRTCConnected()) {
 			this.disconnectWebRTC();
 		} else {
@@ -518,7 +534,7 @@ class RemoteMe {
 	}
 
 	connectWebRTC() {
-		this.webSocketGuard.clear();
+		this._webSocketGuard.clear();
 		if (!this.isWebSocketConnected()) {
 			console.error("websocket is not connected cannot create webrtc connection");
 			return;
@@ -923,17 +939,7 @@ class RemoteMe {
 	}
 
 
-	afterWebSocketConneced(toCall) {
-		if (this.isWebSocketConnected()) {
-			setTimeout(toCall);
-		} else {
-			this.remoteMeConfig.webSocketConnectionChange.push(x => {
-				if (x == ConnectingStatusEnum.CONNECTED) {
-					toCall();
-				}
-			});
-		}
-	}
+
 
 	setAutomaticlyConnectWebRTC() {
 		if (RemoteMe.thiz.isWebSocketConnected() && RemoteMe.thiz.remoteMeConfig.automaticlyConnectWebRTC==false) {
@@ -1102,6 +1108,10 @@ class RemoteMe {
 		setTimeout(() => {
 			if (status == ConnectingStatusEnum.CONNECTED && this.variables != undefined) {
 				this.getVariables().resendObserve();
+			}
+
+			if (status==ConnectingStatusEnum.CONNECTED && this._subscribedEvents.length>0){
+				this.sendWebSocket(getEventSubscriberMessage(this._subscribedEvents));
 			}
 
 			if (typeof this.remoteMeConfig.webSocketConnectionChange == 'function') {
