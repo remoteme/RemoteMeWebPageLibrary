@@ -47,6 +47,44 @@ $.fn.extend({
 });
 
 
+class TwoWayMapper {
+
+	constructor() {
+		this.keys=[];
+		this.reverseKeys=[];
+
+		this.normal=[];
+		this.reverse=[];
+	}
+
+	add(key1,key2){
+		this.normal[key1]=key2;
+		this.reverse[key2]=key1;
+
+		if (this.keys.indexOf(key1)==-1){
+			this.keys.push(key1)
+		}
+
+		if (this.reverse.indexOf(key2)==-1){
+			this.reverse.push(key2)
+		}
+	}
+
+	get(key){
+		return this.normal[key1];
+	}
+	getReverse(){
+		return this.reverse[key];
+	}
+	getKeys(){
+		return this.keys;
+	}
+
+	getReverseKeys(){
+		return this.reverseKeys;
+	}
+}
+
 class Gyroscope {
 
 	constructor(xMin, xMax, yMin, yMax, xRange, yRange, xySwap, orientationSupport, onMove) {
@@ -249,7 +287,7 @@ class Touch {
 
 		this.move = false;
 
-		let clazz = "steerParent ";
+		let clazz = "comboParent ";
 		if ($(selector).attr("class") != undefined) {
 			clazz += $(selector).attr("class");
 			$(selector).removeAttr("class");
@@ -275,15 +313,15 @@ class Touch {
 			touch.move = true;
 			var touchEvent = touch.getTouchEvent(e);
 
-			var top = touchEvent.pageY - touch.steerParent.offset().top;
-			var left = touchEvent.pageX - touch.steerParent.offset().left;
+			var top = touchEvent.pageY - touch.comboParent.offset().top;
+			var left = touchEvent.pageX - touch.comboParent.offset().left;
 
 
 			touch.deltaOffsetX = touchEvent.clientX;
 			touch.deltaOffsetY = touchEvent.clientY;
 
 
-			touch.steerParent.addClass('active');
+			touch.comboParent.addClass('active');
 
 			touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
 			touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
@@ -295,14 +333,14 @@ class Touch {
 			var touch = e.data;
 			touch.move = false;
 
-			touch.steerParent.removeClass('active');
+			touch.comboParent.removeClass('active');
 
-			touch.steerParent.css('top', '');
-			touch.steerParent.css('left', '');
+			touch.comboParent.css('top', '');
+			touch.comboParent.css('left', '');
 			touch.pointer.css('background-color', '');
 
-			touch.pointer.css('top', touch.steerParent.height() / 2 - touch.pointer.height() / 2 + "px");
-			touch.pointer.css('left', touch.steerParent.width() / 2 - touch.pointer.width() / 2 + "px");
+			touch.pointer.css('top', touch.comboParent.height() / 2 - touch.pointer.height() / 2 + "px");
+			touch.pointer.css('left', touch.comboParent.width() / 2 - touch.pointer.width() / 2 + "px");
 
 			touch.onMove(0, 0);
 		};
@@ -313,14 +351,14 @@ class Touch {
 			if (touch.move) {
 				var touchEvent = touch.getTouchEvent(e);
 
-				var top = touchEvent.pageY - touch.steerParent.offset().top;
-				var left = touchEvent.pageX - touch.steerParent.offset().left;
+				var top = touchEvent.pageY - touch.comboParent.offset().top;
+				var left = touchEvent.pageX - touch.comboParent.offset().left;
 
 				touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
 				touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
 
-				var xposition = -(touch.deltaOffsetX - touchEvent.clientX) / (touch.steerParent.width() / 2);
-				var yposition = (touch.deltaOffsetY - touchEvent.clientY) / (touch.steerParent.height() / 2);
+				var xposition = -(touch.deltaOffsetX - touchEvent.clientX) / (touch.comboParent.width() / 2);
+				var yposition = (touch.deltaOffsetY - touchEvent.clientY) / (touch.comboParent.height() / 2);
 
 				xposition = touch.range(xposition);
 				yposition = touch.range(yposition);
@@ -404,6 +442,165 @@ class Touch {
 
 	getCartesianDiff(p1, p2) {
 		return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))
+	}
+}
+
+
+
+class MultiSwitch {
+
+
+	constructor(selector,label,items,onMainChangeEvent,onSingleChangeEvent) {
+		this.id="asd";
+		this.onMainChangeEvent=onMainChangeEvent;
+		this.onSingleChangeEvent=onSingleChangeEvent;
+
+		this.count=0;
+
+
+		let container = $(`<div class="mdl-textfield mdl-js-textfield getmdl-extend">
+
+        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect main-switch" for="main-switch_${this.id}">
+            <input type="checkbox" id="main-switch_${this.id}" class="mdl-switch__input" checked>
+            <span class="mdl-switch__label" >${label}</span>
+        </label>
+
+        <i class="mdl-icon-toggle__label material-icons"  id="arrow">keyboard_arrow_down</i>
+
+        <ul for="arrow" class="mdl-menu mdl-menu--bottom-right mdl-js-menu">
+
+        </ul>
+    </div>`);
+
+		this.mainCheckBoxElement=container.children("label");
+
+		let checkbox = this.mainCheckBoxElement.children("input");
+
+		var thiz=this;
+
+		checkbox.change(function () {
+			setTimeout(thiz.onMainChange.bind(thiz),0);
+
+		});
+
+
+		this.checkBoxElements=[];
+
+		for(let i=0;i<items.length;i++){
+			this.count++;
+			let itemId=this.id+"_"+i;
+
+			let checkBoxElement = $(` <li class="mdl-menu__item" >
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch_${itemId}" >
+                    <input type="checkbox" id="switch_${itemId}" class="mdl-switch__input" checked>
+                    <span class="mdl-switch__label">${items[i]}</span>
+                </label>
+            </li>`);
+
+			this.checkBoxElements.push(checkBoxElement.children("label"));
+
+			let checkbox = this.checkBoxElements[i].children("input");
+
+			container.children('.mdl-menu').append(checkBoxElement);
+
+			checkbox.change(function () {
+				setTimeout(thiz.onSingleItemChange.bind(thiz),0,i);
+
+			});
+			componentHandler.upgradeElement(this.checkBoxElements[i][0]);
+
+		}
+
+
+		selector.replaceWith(container[0]);
+	}
+
+	isItemSelected(id){
+		return this.checkBoxElements[id].is('.is-checked');
+	}
+
+	isMainSelected(){
+		return this.mainCheckBoxElement.is('.is-checked');
+	}
+
+	refreshMain(){
+		let selectedCount=0;
+		for(let i=0;i<this.count;i++){
+			if (this.isItemSelected(i)){
+				selectedCount++;
+			}
+		}
+
+		if (selectedCount==0){
+			this.setMain(false,false);
+		}else if (selectedCount==this.count){
+			this.setMain(true,false);
+		}else{
+			this.setMainUndefined();
+		}
+	}
+
+	refreshItemsBasedOnMain(){
+		let val=this.isMainSelected();
+		for(let i=0;i<this.count;i++){
+			this.setSingleElement(i,val);
+		}
+	}
+
+	onSingleItemChange(id){
+
+		this.refreshMain();
+
+		this.onSingleChangeEvent(id,this.isItemSelected(id));
+
+	}
+
+	setSingleElement(id,val){
+		if (val) {
+			this.checkBoxElements[id].get()[0].MaterialSwitch.on();
+		} else {
+			this.checkBoxElements[id].get()[0].MaterialSwitch.off();
+		}
+		this.refreshMain();
+
+
+	}
+
+
+	onMainChange(){
+		this.clearMainUndefined();
+
+		this.onMainChangeEvent(this.isMainSelected());
+		this.refreshItemsBasedOnMain();
+
+	}
+
+	clearMainUndefined(){
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('left','');
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('background-color','');
+		this.mainCheckBoxElement.children('.mdl-switch__track').css('background-color','');
+	}
+
+	setMainUndefined(){
+		this.mainCheckBoxElement.get()[0].MaterialSwitch.off();
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('left','8px');
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('background-color','#b1b1b1');
+		this.mainCheckBoxElement.children('.mdl-switch__track').css('background-color','#777777');
+	}
+
+	setMain(val,callRefresh=true){
+		this.clearMainUndefined();
+		if (val) {
+			this.mainCheckBoxElement.get()[0].MaterialSwitch.on();
+		} else {
+			this.mainCheckBoxElement.get()[0].MaterialSwitch.off();
+		}
+
+		if (callRefresh){
+			let thiz=this;
+			setTimeout(thiz.refreshItemsBasedOnMain.bind(thiz),0);
+		}
+
 	}
 }
 
@@ -1015,6 +1212,52 @@ function addJoystick(selector) {
 
 }
 
+
+
+function addSchedulerStatusChange(selector) {
+
+	var prop = readProperties(selector);
+
+	var label = getBoolean("label", $(selector), "Schedulers");
+
+	var toInsert = $(selector).find("schedulers");
+
+	let schedulerNames=[];
+	let schedulerIds=[];
+	for (var i = 0; i < toInsert.length; i++) {
+		schedulerNames.push($(toInsert[i]).html());
+		schedulerIds.push( $(toInsert[i]).attr('id'));
+	}
+
+
+	let multiTouch = new MultiSwitch(selector,label,schedulerNames,(val)=>{
+		console.info("main change"+val);
+
+		let temp=[];
+		for(let id in schedulerIds){
+			temp.push({id:id,state:val});
+		}
+		remoteme.send(getSetSchedulerMessage(temp));
+
+	},(id,val)=>{
+		console.info("single change "+id+" "+val);
+		remoteme.send(getSetSchedulerMessage([{schedulerId:schedulerIds[id],state:val}]));
+	});
+
+
+	remoteme.remoteMeConfig.schedulerStatusChange.push((schedulerId,state)=>{
+		multiTouch.setSingleElement(schedulerIds.indexOf(schedulerId),state);
+	});
+
+
+
+	remoteme.subscribeEvent(EventSubscriberTypeEnum.VARIABLE_SCHEDULER_STATUS);
+
+
+	replaceComponent(selector, box);
+
+}
+
 function addCameraMouseTracking(selector) {
 
 	var prop = readProperties(selector);
@@ -1427,6 +1670,12 @@ function replace() {
 		addDeviceConnectionStatus(deviceConnectionStatus[i]);
 	}
 
+
+	let multiScheduler = $("schedulerconnectionstate");
+	for (let i = 0; i < multiScheduler.length; i++) {
+		addSchedulerStatusChange(multiScheduler[i]);
+	}
+
 	let camera = $("camera");
 	for (let i = 0; i < camera.length; i++) {
 		addCamera(camera[i]);
@@ -1495,6 +1744,9 @@ function replace() {
 		} else if ($(variable).attr("type") == "SMALL_INTEGER_2" && $(variable).attr("component") == "gyroscope") {
 			addGyroscope(variable);
 		}
+
+
+
 	}
 	variables = $("variable");
 	for (let i = 0; i < variables.length; i++) {

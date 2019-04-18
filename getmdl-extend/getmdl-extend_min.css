@@ -2,20 +2,18 @@
     outline: none
 }
 
-.getmdl-extend .mdl-textfield__input {
-    cursor: pointer
-}
-
-.getmdl-extend .selected {
-    background-color: #ddd
-}
 
 .getmdl-extend .mdl-icon-toggle__label {
     float: right;
-    margin-top: -30px;
+    margin-top: -6px;
     color: rgba(0, 0, 0, 0.4);
     transform: rotate(0);
-    transition: transform 0.3s
+    transition: transform 0.3s;
+    width:50px;
+}
+.getmdl-extend .main-switch{
+    float: left;
+    width: calc(100% - 50px);
 }
 
 .getmdl-extend.is-focused .mdl-icon-toggle__label {
@@ -32,21 +30,7 @@
     width: 100%
 }
 
-.getmdl-extend .mdl-menu__container .mdl-menu .mdl-menu__item {
-    font-size: 16px
-}
 
-.getmdl-extend__fix-height .mdl-menu__container .mdl-menu {
-    overflow-y: auto;
-    max-height: 288px !important
-}
-
-.getmdl-extend__fix-height .mdl-menu.mdl-menu--top-left {
-    bottom: auto;
-    top: 0
-}
-
-
-.getmdl-extend .main-switch {
-    width:calc(100% - 30px)
+.getmdl-extend .mdl-menu__item .mdl-switch{
+    margin-top:12px;
 }

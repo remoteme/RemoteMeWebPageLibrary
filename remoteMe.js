@@ -87,6 +87,7 @@ class RemoteMe {
 			automaticlyConnectWS: true,
 			automaticlyConnectWebRTC: false,
 			webSocketConnectionChange: [],
+			schedulerStatusChange: [],
 			deviceConnectionChange:[],
 			directConnectionChange: [],
 			webRtcConnectionChange: [],
@@ -494,8 +495,21 @@ class RemoteMe {
 				});
 			}
 
+		}else if (ret.typeId == MessageType.VARIABLE_SCHEDULER_STATUS) {
+			let count=data.popUint16()/5;
+			while(count-->0){
 
-		} else if (ret.typeId == 0) {
+				let schedulerId = data.popUint32();
+				let status=data.popByte()==1;
+				this.remoteMeConfig.schedulerStatusChange.forEach(x=>{
+					x(schedulerId,status);
+				});
+			}
+
+		}
+
+
+		else if (ret.typeId == 0) {
 			//ping
 		} else {
 			console.error("Message id " + ret.typeId + " was not reconized");
