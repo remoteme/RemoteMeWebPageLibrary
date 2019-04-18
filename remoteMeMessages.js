@@ -3,7 +3,7 @@ ChangeMessageSetting={ NO_RENEWAL:0,RENEWAL_IF_FAILED:1}
 
 MessageType = {USER_MESSAGE:100, USER_MESSAGE_DELIVER_STATUS:101,USER_SYNC_MESSAGE:102,
 	VARIABLE_CHANGE_MESSAGE:103, VARIABLE_CHANGE_PROPAGATE_MESSAGE:104,SEND_PUSH_NOTIFICATION:105,
-	SET_SCHEDULER:106,
+	SET_VARIABLE_SCHEDULER_STATE:106,
 	SYNC_MESSAGE:120, SYNC_MESSAGE_RESPONSE:121,
 	OBSERVER_REGISTER_MESSAGE:122,
 	REGISTER_DEVICE:200, REGISTER_CHILD_DEVICE:201,
@@ -442,7 +442,7 @@ function getPushNotificationMessage(webPageDeviceId,title,body,badge,icon,image,
 
 
 
-function getSetSchedulerMessage(status=[]){
+function getSetVariableSchedulerStateMessage(status=[]){
 
 
 
@@ -450,10 +450,10 @@ function getSetSchedulerMessage(status=[]){
 	pos=0;
 	var ret = new RemoteMeData(4+size);
 
-	ret.putUint16( MessageType.SET_SCHEDULER);
+	ret.putUint16( MessageType.SET_VARIABLE_SCHEDULER_STATE);
 
 	for(schedIdAndState in status){
-		ret.putUint32(schedIdAndState.schedulerId);
+		ret.putUint32(schedIdAndState.variableSchedulerId);
 		ret.putUint8(schedIdAndState.state?1:0);
 	}
 

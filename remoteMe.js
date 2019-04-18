@@ -87,7 +87,7 @@ class RemoteMe {
 			automaticlyConnectWS: true,
 			automaticlyConnectWebRTC: false,
 			webSocketConnectionChange: [],
-			schedulerStatusChange: [],
+			variableSchedulerStatusChange: [],
 			deviceConnectionChange:[],
 			directConnectionChange: [],
 			webRtcConnectionChange: [],
@@ -499,10 +499,10 @@ class RemoteMe {
 			let count=data.popUint16()/5;
 			while(count-->0){
 
-				let schedulerId = data.popUint32();
+				let variableSchedulerId = data.popUint32();
 				let status=data.popByte()==1;
-				this.remoteMeConfig.schedulerStatusChange.forEach(x=>{
-					x(schedulerId,status);
+				this.remoteMeConfig.variableSchedulerStatusChange.forEach(x=>{
+					x(variableSchedulerId,status);
 				});
 			}
 

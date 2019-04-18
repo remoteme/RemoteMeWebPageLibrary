@@ -1214,7 +1214,7 @@ function addJoystick(selector) {
 
 
 
-function addSchedulerStatusChange(selector) {
+function addVariableSchedulerMultiStatus(selector) {
 
 	var prop = readProperties(selector);
 
@@ -1223,10 +1223,10 @@ function addSchedulerStatusChange(selector) {
 	var toInsert = $(selector).find("schedulers");
 
 	let schedulerNames=[];
-	let schedulerIds=[];
+	let variableSchedulerIds=[];
 	for (var i = 0; i < toInsert.length; i++) {
 		schedulerNames.push($(toInsert[i]).html());
-		schedulerIds.push( $(toInsert[i]).attr('id'));
+		variableSchedulerIds.push( $(toInsert[i]).attr('id'));
 	}
 
 
@@ -1234,19 +1234,19 @@ function addSchedulerStatusChange(selector) {
 		console.info("main change"+val);
 
 		let temp=[];
-		for(let id in schedulerIds){
+		for(let id in variableSchedulerIds){
 			temp.push({id:id,state:val});
 		}
-		remoteme.send(getSetSchedulerMessage(temp));
+		remoteme.send(getSetVariableSchedulerStateMessage(temp));
 
 	},(id,val)=>{
 		console.info("single change "+id+" "+val);
-		remoteme.send(getSetSchedulerMessage([{schedulerId:schedulerIds[id],state:val}]));
+		remoteme.send(getSetVariableSchedulerStateMessage([{variableSchedulerId:variableSchedulerIds[id],state:val}]));
 	});
 
 
-	remoteme.remoteMeConfig.schedulerStatusChange.push((schedulerId,state)=>{
-		multiTouch.setSingleElement(schedulerIds.indexOf(schedulerId),state);
+	remoteme.remoteMeConfig.variableSchedulerStatusChange.push((variableSchedulerId,state)=>{
+		multiTouch.setSingleElement(variableSchedulerIds.indexOf(variableSchedulerId),state);
 	});
 
 
@@ -1671,9 +1671,9 @@ function replace() {
 	}
 
 
-	let multiScheduler = $("schedulerconnectionstate");
-	for (let i = 0; i < multiScheduler.length; i++) {
-		addSchedulerStatusChange(multiScheduler[i]);
+	let multiVariableScheduler = $("variableschedulermultistatus");
+	for (let i = 0; i < multiVariableScheduler.length; i++) {
+		addVariableSchedulerMultiStatus(multiVariableScheduler[i]);
 	}
 
 	let camera = $("camera");
