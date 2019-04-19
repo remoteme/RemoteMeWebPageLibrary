@@ -3,9 +3,7 @@
 {
 	'use strict';
 	(function () {
-		function whenLoaded() {
-			getmdlExtend.init('.getmdl-extend');
-		};
+
 
 		window.addEventListener ?
 			window.addEventListener("load", whenLoaded, false) :

@@ -446,13 +446,14 @@ function getSetVariableSchedulerStateMessage(status=[]){
 
 
 
-	size= status.length*5;
-	pos=0;
-	var ret = new RemoteMeData(4+size);
+	let size= status.length*5;
+	let pos=0;
+	let ret = new RemoteMeData(4+size);
 
 	ret.putUint16( MessageType.SET_VARIABLE_SCHEDULER_STATE);
+	ret.putShort(size);
 
-	for(schedIdAndState in status){
+	for(schedIdAndState of status){
 		ret.putUint32(schedIdAndState.variableSchedulerId);
 		ret.putUint8(schedIdAndState.state?1:0);
 	}

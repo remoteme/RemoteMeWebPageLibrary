@@ -446,33 +446,34 @@ class Touch {
 }
 
 
-
+var multiSwitchUID=0;
 class MultiSwitch {
 
 
+
 	constructor(selector,label,items,onMainChangeEvent,onSingleChangeEvent) {
-		this.id="asd";
+		this.id="multiSwitchUID"+(multiSwitchUID++);
 		this.onMainChangeEvent=onMainChangeEvent;
 		this.onSingleChangeEvent=onSingleChangeEvent;
 
 		this.count=0;
 
 
-		let container = $(`<div class="mdl-textfield mdl-js-textfield getmdl-extend">
+		this.container = $(`<div class="mdl-textfield mdl-js-textfield getmdl-extend">
 
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect main-switch" for="main-switch_${this.id}">
             <input type="checkbox" id="main-switch_${this.id}" class="mdl-switch__input" checked>
             <span class="mdl-switch__label" >${label}</span>
         </label>
 
-        <i class="mdl-icon-toggle__label material-icons"  id="arrow">keyboard_arrow_down</i>
+        <i class="mdl-icon-toggle__label material-icons"  id="arrow_${this.id}">keyboard_arrow_down</i>
 
-        <ul for="arrow" class="mdl-menu mdl-menu--bottom-right mdl-js-menu">
+        <ul for="arrow_${this.id}" class="mdl-menu mdl-menu--bottom-right mdl-js-menu">
 
         </ul>
     </div>`);
 
-		this.mainCheckBoxElement=container.children("label");
+		this.mainCheckBoxElement=this.container.children("label");
 
 		let checkbox = this.mainCheckBoxElement.children("input");
 
@@ -486,13 +487,16 @@ class MultiSwitch {
 
 		this.checkBoxElements=[];
 
+		selector.replaceWith(this.container[0]);
+
+
 		for(let i=0;i<items.length;i++){
 			this.count++;
 			let itemId=this.id+"_"+i;
 
 			let checkBoxElement = $(` <li class="mdl-menu__item" >
-                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch_${itemId}" >
-                    <input type="checkbox" id="switch_${itemId}" class="mdl-switch__input" checked>
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch_${this.id}_${itemId}" >
+                    <input type="checkbox" id="switch_${this.id}_${itemId}" class="mdl-switch__input" checked>
                     <span class="mdl-switch__label">${items[i]}</span>
                 </label>
             </li>`);
@@ -501,7 +505,7 @@ class MultiSwitch {
 
 			let checkbox = this.checkBoxElements[i].children("input");
 
-			container.children('.mdl-menu').append(checkBoxElement);
+			this.container.children('.mdl-menu').append(checkBoxElement);
 
 			checkbox.change(function () {
 				setTimeout(thiz.onSingleItemChange.bind(thiz),0,i);
@@ -509,10 +513,15 @@ class MultiSwitch {
 			});
 			componentHandler.upgradeElement(this.checkBoxElements[i][0]);
 
+
 		}
 
 
-		selector.replaceWith(container[0]);
+
+		componentHandler.upgradeElement(this.mainCheckBoxElement[0]);
+		componentHandler.upgradeElement(this.container[0]);
+		componentHandler.upgradeElement(this.container.children(".mdl-icon-toggle__label")[0]);
+		componentHandler.upgradeElement(this.container.children(".mdl-menu")[0]);
 	}
 
 	isItemSelected(id){
@@ -1213,66 +1222,101 @@ function addJoystick(selector) {
 }
 
 
-
-function addVariableSchedulerMultiStatus(selector) {
+var schedulerUID=0;
+function addVariableSchedulerMultiState(selector) {
 
 	var prop = readProperties(selector);
 
-	var label = getBoolean("label", $(selector), "Schedulers");
+	var label = getString("label", $(selector), "Schedulers");
 
-	var toInsert = $(selector).find("schedulers");
+	var toInsert = $(selector).find("variablescheduler");
 
-	let schedulerNames=[];
+	let variableSchedulerNames=[];
 	let variableSchedulerIds=[];
-	for (var i = 0; i < toInsert.length; i++) {
-		schedulerNames.push($(toInsert[i]).html());
-		variableSchedulerIds.push( $(toInsert[i]).attr('id'));
+	for (let i = 0; i < toInsert.length; i++) {
+		variableSchedulerNames.push($(toInsert[i]).html());
+		variableSchedulerIds.push(parseInt( $(toInsert[i]).attr('value')));
 	}
 
 
-	let multiTouch = new MultiSwitch(selector,label,schedulerNames,(val)=>{
-		console.info("main change"+val);
+	if (variableSchedulerIds.length!=1){
+		let multiTouch = new MultiSwitch(selector,label,variableSchedulerNames,(val)=>{
+			console.info("main change"+val);
 
-		let temp=[];
-		for(let id in variableSchedulerIds){
-			temp.push({id:id,state:val});
-		}
-		remoteme.send(getSetVariableSchedulerStateMessage(temp));
+			let temp=[];
+			for(let id of variableSchedulerIds){
+				temp.push({variableSchedulerId:id,state:val});
+			}
+			remoteme.send(getSetVariableSchedulerStateMessage(temp));
 
-	},(id,val)=>{
-		console.info("single change "+id+" "+val);
-		remoteme.send(getSetVariableSchedulerStateMessage([{variableSchedulerId:variableSchedulerIds[id],state:val}]));
-	});
+		},(id,val)=>{
+			console.info("single change "+id+" "+val);
+			remoteme.send(getSetVariableSchedulerStateMessage([{variableSchedulerId:variableSchedulerIds[id],state:val}]));
+		});
+		multiTouch.setMain(false);
+
+		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId,state)=>{
+			multiTouch.setSingleElement(variableSchedulerIds.indexOf(variableSchedulerId),state);
+		});
+
+	}else{
+		let temp="schedulerUID"+(schedulerUID++);
+
+		checkBoxElement = $(`<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-${temp}">
+			<input type="checkbox" id="switch-${temp}" class="mdl-switch__input" >
+			<span class="mdl-switch__label">${label}</span>
+			</label>`);
 
 
-	remoteme.remoteMeConfig.variableSchedulerStatusChange.push((variableSchedulerId,state)=>{
-		multiTouch.setSingleElement(variableSchedulerIds.indexOf(variableSchedulerId),state);
-	});
+
+		let checkbox = checkBoxElement.find("input");
+
+
+		checkbox.change(function () {
+			let stats=!checkBoxElement.is('.is-checked');
+			remoteme.send(getSetVariableSchedulerStateMessage([{variableSchedulerId:variableSchedulerIds[0],state:stats}]));
+		});
+
+		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId,state)=>{
+			if (variableSchedulerId==variableSchedulerIds[0]){
+				if (state) {
+					checkBoxElement.get()[0].MaterialSwitch.on();
+				} else {
+					checkBoxElement.get()[0].MaterialSwitch.off();
+				}
+			}
+		});
+
+
+		replaceComponent(selector, checkBoxElement);
+
+		componentHandler.upgradeElement(checkBoxElement[0]);
+	}
 
 
 
-	remoteme.subscribeEvent(EventSubscriberTypeEnum.VARIABLE_SCHEDULER_STATUS);
+
+	remoteme.subscribeEvent(EventSubscriberTypeEnum.VARIABLE_SCHEDULER_STATE);
 
 
-	replaceComponent(selector, box);
 
 }
 
 function addCameraMouseTracking(selector) {
 
-	var prop = readProperties(selector);
+	let prop = readProperties(selector);
 
-	var invertX = getBoolean("invertX", $(selector), false);
-	var invertY = getBoolean("invertY", $(selector), false);
+	let invertX = getBoolean("invertX", $(selector), false);
+	let invertY = getBoolean("invertY", $(selector), false);
 
-	var xMin = getInteger("xMin", $(selector), -100);
-	var xMax = getInteger("xMax", $(selector), 100);
-	var yMin = getInteger("yMin", $(selector), -100);
-	var yMax = getInteger("yMax", $(selector), 100);
+	let xMin = getInteger("xMin", $(selector), -100);
+	let xMax = getInteger("xMax", $(selector), 100);
+	let yMin = getInteger("yMin", $(selector), -100);
+	let yMax = getInteger("yMax", $(selector), 100);
 
-	var requiredMouseDown = getBoolean("requiredMouseDown", $(selector), true);
-	var reset = getBoolean("reset", $(selector), true);
-	var onlyDirect = getBoolean("onlyDirect", $(selector), false);
+	let requiredMouseDown = getBoolean("requiredMouseDown", $(selector), true);
+	let reset = getBoolean("reset", $(selector), true);
+	let onlyDirect = getBoolean("onlyDirect", $(selector), false);
 
 
 	if (invertX) {
@@ -1290,7 +1334,7 @@ function addCameraMouseTracking(selector) {
 	let video = $("video");
 	if (video.get(0) != undefined) {
 
-		var sendNow = (x, y, onlyDirect) => {
+		let sendNow = (x, y, onlyDirect) => {
 
 			x = Math.min(1, Math.max(-1, x));
 			y = Math.min(1, Math.max(-1, y));
@@ -1366,7 +1410,7 @@ function addDeviceConnectionStatus(selector) {
 	let deviceId = getInteger("deviceId", $(selector), false);
 	let text = getString("text", $(selector), "");
 
-	var box = $(`<div class='deviceStatusIcons'></div>`);
+	let box = $(`<div class='deviceStatusIcons'></div>`);
 
 	let icon = $(`<i class='material-icons'>link_off</i>`);
 	let cnt = $(`<div class='disconnected'></div>`);
@@ -1375,7 +1419,7 @@ function addDeviceConnectionStatus(selector) {
 	cnt.append($(`<div class='text'>${text}</div>`));
 	box.append(cnt);
 	if (thisDeviceId == deviceId) {
-		var toCall = getOnDeviceConnectionChange(cnt, icon, thisDeviceId);
+		let toCall = getOnDeviceConnectionChange(cnt, icon, thisDeviceId);
 		remoteme.remoteMeConfig.webSocketConnectionChange.push((status) => {
 			console.info(thisDeviceId+" "+status);
 			toCall(thisDeviceId, status == ConnectingStatusEnum.CONNECTED)
@@ -1428,7 +1472,7 @@ function addconnectionStatus(selector) {
 	let camera = getBoolean("camera", $(selector), false);
 
 
-	var box = $(`<div class='statusIcons'></div>`);
+	let box = $(`<div class='statusIcons'></div>`);
 
 	if (webSocket) {
 
@@ -1512,10 +1556,10 @@ function addCamera(selector) {
 		clazz = "class=\"camera\"";
 	}
 
-	var box = $(`<video id="remoteVideo"  muted="muted" autoplay="autoplay" ondblclick="fullscreen(this)" ${style} ${clazz} ></video>`);
+	let box = $(`<video id="remoteVideo"  muted="muted" autoplay="autoplay" ondblclick="fullscreen(this)" ${style} ${clazz} ></video>`);
 
 	if (showInfo) {
-		var dialog = $(` <dialog class="mdl-dialog" id="WebRTCDialogInfo">
+		let dialog = $(` <dialog class="mdl-dialog" id="WebRTCDialogInfo">
 			
 			<div class="mdl-dialog__content" style="padding:0px;margin:0px">
 			<h6 style="margin-top: 5px;">Allow data collection?</h6>
@@ -1598,22 +1642,22 @@ function getBoolean(elementName, element, defValue) {
 }
 
 function addGyroscope(selector) {
-	var prop = readProperties(selector);
+	let prop = readProperties(selector);
 
-	var invertX = getBoolean("invertX", $(selector), false);
-	var invertY = getBoolean("invertY", $(selector), false);
+	let invertX = getBoolean("invertX", $(selector), false);
+	let invertY = getBoolean("invertY", $(selector), false);
 
-	var xMin = getInteger("xMin", $(selector), -100);
-	var xMax = getInteger("xMax", $(selector), 100);
-	var yMin = getInteger("yMin", $(selector), -100);
-	var yMax = getInteger("yMax", $(selector), 100);
-	var xRange = getInteger("xRange", $(selector), 20);
-	var yRange = getInteger("yRange", $(selector), 20);
+	let xMin = getInteger("xMin", $(selector), -100);
+	let xMax = getInteger("xMax", $(selector), 100);
+	let yMin = getInteger("yMin", $(selector), -100);
+	let yMax = getInteger("yMax", $(selector), 100);
+	let xRange = getInteger("xRange", $(selector), 20);
+	let yRange = getInteger("yRange", $(selector), 20);
 
-	var onlyDirect = getBoolean("onlyDirect", $(selector), false);
+	let onlyDirect = getBoolean("onlyDirect", $(selector), false);
 
-	var xySwap = getBoolean("xySwap", $(selector), false);
-	var orientationSupport = getBoolean("orientationSupport", $(selector), false);
+	let xySwap = getBoolean("xySwap", $(selector), false);
+	let orientationSupport = getBoolean("orientationSupport", $(selector), false);
 
 
 	if (invertX) {
@@ -1628,9 +1672,9 @@ function addGyroscope(selector) {
 	}
 
 
-	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
+	let element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
 
-	var gyroscope = new Gyroscope(xMin, xMax, yMin, yMax, xRange, yRange, xySwap, orientationSupport, (x, y, xN, yN) => {
+	let gyroscope = new Gyroscope(xMin, xMax, yMin, yMax, xRange, yRange, xySwap, orientationSupport, (x, y, xN, yN) => {
 		otChange200.execute(() => {
 			element.html(prop.label + " " + nicePrint(xN) + " " + nicePrint(yN));
 
@@ -1671,9 +1715,9 @@ function replace() {
 	}
 
 
-	let multiVariableScheduler = $("variableschedulermultistatus");
+	let multiVariableScheduler = $("variableschedulersstate");
 	for (let i = 0; i < multiVariableScheduler.length; i++) {
-		addVariableSchedulerMultiStatus(multiVariableScheduler[i]);
+		addVariableSchedulerMultiState(multiVariableScheduler[i]);
 	}
 
 	let camera = $("camera");
@@ -1814,12 +1858,12 @@ function addDatePickerForChart(id, date1, date2, onSet) {
 function fullscreen(element) {
 
 
-	var isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null) ||
+	let isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null) ||
 		(document.webkitFullscreenElement && document.webkitFullscreenElement !== null) ||
 		(document.mozFullScreenElement && document.mozFullScreenElement !== null) ||
 		(document.msFullscreenElement && document.msFullscreenElement !== null);
 
-	var docElm = document.documentElement;
+	let docElm = document.documentElement;
 	if (!isInFullScreen) {
 		if (docElm.requestFullscreen) {
 			docElm.requestFullscreen();

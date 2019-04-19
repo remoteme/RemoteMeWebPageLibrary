@@ -16,7 +16,7 @@ ConnectingStatusEnum = {
 };
 EventSubscriberTypeEnum = {
 	DEVICE_CONNECTION: 0,
-	VARIABLE_SCHEDULER_STATUS: 50
+	VARIABLE_SCHEDULER_STATE: 50
 };
 
 
@@ -87,7 +87,7 @@ class RemoteMe {
 			automaticlyConnectWS: true,
 			automaticlyConnectWebRTC: false,
 			webSocketConnectionChange: [],
-			variableSchedulerStatusChange: [],
+			variableSchedulerStateChange: [],
 			deviceConnectionChange:[],
 			directConnectionChange: [],
 			webRtcConnectionChange: [],
@@ -495,14 +495,14 @@ class RemoteMe {
 				});
 			}
 
-		}else if (ret.typeId == MessageType.VARIABLE_SCHEDULER_STATUS) {
+		}else if (ret.typeId == MessageType.VARIABLE_SCHEDULER_STATE_CHANGE) {
 			let count=data.popUint16()/5;
 			while(count-->0){
 
 				let variableSchedulerId = data.popUint32();
-				let status=data.popByte()==1;
-				this.remoteMeConfig.variableSchedulerStatusChange.forEach(x=>{
-					x(variableSchedulerId,status);
+				let state=data.popByte()==1;
+				this.remoteMeConfig.variableSchedulerStateChange.forEach(x=>{
+					x(variableSchedulerId,state);
 				});
 			}
 
