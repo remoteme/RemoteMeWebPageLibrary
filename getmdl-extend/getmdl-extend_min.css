@@ -14,11 +14,12 @@
 .getmdl-extend .main-switch{
     float: left;
     width: calc(100% - 50px);
+    overflow-x: hidden;
 }
 
 .getmdl-extend.is-focused .mdl-icon-toggle__label {
     color: #3f51b5;
-    transform: rotate(180deg)
+    transform: rotate(180deg);
 }
 
 .getmdl-extend .mdl-menu__container {

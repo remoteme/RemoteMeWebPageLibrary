@@ -1256,7 +1256,10 @@ function addVariableSchedulerMultiState(selector) {
 		multiTouch.setMain(false);
 
 		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId,state)=>{
-			multiTouch.setSingleElement(variableSchedulerIds.indexOf(variableSchedulerId),state);
+			let elementPos = variableSchedulerIds.indexOf(variableSchedulerId);
+			if (elementPos!=-1){
+				multiTouch.setSingleElement(elementPos,state);
+			}
 		});
 
 	}else{
