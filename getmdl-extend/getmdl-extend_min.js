@@ -4,10 +4,9 @@
 	'use strict';
 	(function () {
 
-
-		window.addEventListener ?
-			window.addEventListener("load", whenLoaded, false) :
-			window.attachEvent && window.attachEvent("onload", whenLoaded);
+	//	window.addEventListener ?
+			//window.addEventListener("load", whenLoaded, false) :
+			//window.attachEvent && window.attachEvent("onload", whenLoaded);
 
 	}());
 
