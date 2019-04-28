@@ -1,0 +1,51 @@
+body{
+    margin:0;
+    padding:0;
+    font-family: Roboto,sans-serif;
+    color:#0e1a35;
+
+}
+
+.title{
+    color:  #3f51b5;
+    /* font-weight: bold; */
+    font-size: 175%;
+    letter-spacing: 1px;
+}
+
+.footer{
+
+    background-image:url("/libs/notification/withLovePlain.svg") ;
+    color: white;
+    padding: 14px;
+    /* font-weight: bold; */
+    font-size: 175%;
+    letter-spacing: 1px;
+
+    background-position-x: right;
+    margin-right:20px;
+    background-position-y: 4px;
+    background-size: 330px;
+    background-repeat: no-repeat;
+    background-position-y: 4px;
+    margin-top:40px;
+    height: 100px;
+}
+
+.line{
+    margin: 12px 40px 12px 40px;
+    border-top: 1px solid #d6d6d6;
+}
+h1{
+    font-weight: normal;
+    color:rgb(62, 107, 224);
+}
+
+h2{
+    color:black;
+    font-weight: normal;
+}
+h3{
+    color:#0e1a35;
+    font-weight: normal;
+}
