@@ -2,20 +2,22 @@ body{
     margin:0;
     padding:0;
     font-family: Roboto,sans-serif;
-    color:#0e1a35;
+    color:#272727;
+    line-height: 170%;
 
 }
 
 .title{
-    color:  #3f51b5;
+    color:  #14a76c;
     /* font-weight: bold; */
-    font-size: 175%;
+    font-size: 217%;
     letter-spacing: 1px;
+    margin-bottom: 19px;
 }
 
 .footer{
 
-    background-image:url("/libs/notification/withLovePlain.svg") ;
+    background-image:url("/libs/notification/regards.svg") ;
     color: white;
     padding: 14px;
     /* font-weight: bold; */
@@ -29,7 +31,7 @@ body{
     background-repeat: no-repeat;
     background-position-y: 4px;
     margin-top:40px;
-    height: 100px;
+    height: 30px;
 }
 
 .line{
@@ -38,14 +40,19 @@ body{
 }
 h1{
     font-weight: normal;
-    color:rgb(62, 107, 224);
+    color:#14a76c;
 }
 
 h2{
-    color:black;
+    color:#747474;
     font-weight: normal;
 }
 h3{
-    color:#0e1a35;
+    color:#747474;
     font-weight: normal;
+}
+
+b{
+    font-weight: normal;
+    color:#14a76c;
 }
