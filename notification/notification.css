@@ -56,3 +56,10 @@ b{
     font-weight: normal;
     color:#14a76c;
 }
+
+code{
+    white-space: nowrap;
+    background-color: #f3f3f3;
+    color: #a13131;
+    padding:4px;
+}
