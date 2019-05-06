@@ -287,7 +287,7 @@ class Touch {
 
 		this.move = false;
 
-		let clazz = "comboParent ";
+		let clazz = "steerParent";
 		if ($(selector).attr("class") != undefined) {
 			clazz += $(selector).attr("class");
 			$(selector).removeAttr("class");
@@ -313,15 +313,15 @@ class Touch {
 			touch.move = true;
 			var touchEvent = touch.getTouchEvent(e);
 
-			var top = touchEvent.pageY - touch.comboParent.offset().top;
-			var left = touchEvent.pageX - touch.comboParent.offset().left;
+			var top = touchEvent.pageY - touch.steerParent.offset().top;
+			var left = touchEvent.pageX - touch.steerParent.offset().left;
 
 
 			touch.deltaOffsetX = touchEvent.clientX;
 			touch.deltaOffsetY = touchEvent.clientY;
 
 
-			touch.comboParent.addClass('active');
+			touch.steerParent.addClass('active');
 
 			touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
 			touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
@@ -333,14 +333,14 @@ class Touch {
 			var touch = e.data;
 			touch.move = false;
 
-			touch.comboParent.removeClass('active');
+			touch.steerParent.removeClass('active');
 
-			touch.comboParent.css('top', '');
-			touch.comboParent.css('left', '');
+			touch.steerParent.css('top', '');
+			touch.steerParent.css('left', '');
 			touch.pointer.css('background-color', '');
 
-			touch.pointer.css('top', touch.comboParent.height() / 2 - touch.pointer.height() / 2 + "px");
-			touch.pointer.css('left', touch.comboParent.width() / 2 - touch.pointer.width() / 2 + "px");
+			touch.pointer.css('top', touch.steerParent.height() / 2 - touch.pointer.height() / 2 + "px");
+			touch.pointer.css('left', touch.steerParent.width() / 2 - touch.pointer.width() / 2 + "px");
 
 			touch.onMove(0, 0);
 		};
@@ -351,14 +351,14 @@ class Touch {
 			if (touch.move) {
 				var touchEvent = touch.getTouchEvent(e);
 
-				var top = touchEvent.pageY - touch.comboParent.offset().top;
-				var left = touchEvent.pageX - touch.comboParent.offset().left;
+				var top = touchEvent.pageY - touch.steerParent.offset().top;
+				var left = touchEvent.pageX - touch.steerParent.offset().left;
 
 				touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
 				touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
 
-				var xposition = -(touch.deltaOffsetX - touchEvent.clientX) / (touch.comboParent.width() / 2);
-				var yposition = (touch.deltaOffsetY - touchEvent.clientY) / (touch.comboParent.height() / 2);
+				var xposition = -(touch.deltaOffsetX - touchEvent.clientX) / (touch.steerParent.width() / 2);
+				var yposition = (touch.deltaOffsetY - touchEvent.clientY) / (touch.steerParent.height() / 2);
 
 				xposition = touch.range(xposition);
 				yposition = touch.range(yposition);
