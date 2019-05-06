@@ -289,7 +289,7 @@ class Touch {
 
 		let clazz = "steerParent";
 		if ($(selector).attr("class") != undefined) {
-			clazz += $(selector).attr("class");
+			clazz += " "+$(selector).attr("class");
 			$(selector).removeAttr("class");
 		}
 
