@@ -246,7 +246,7 @@ class RemoteMe {
 
 	}
 
-	restartWebSocket() {
+	onOffWebSocket() {
 		if (this.isWebSocketConnected()) {
 			this.disconnectWebSocket();
 		} else {
