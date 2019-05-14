@@ -84,8 +84,8 @@ class RemoteMe {
 		RemoteMe.thiz = this;
 		RemoteMe.thiz.messageUserSyncIdToFunction = [];
 		var remoteMeDefaultConfig = {
-			automaticlyConnectWS: true,
-			automaticlyConnectWebRTC: false,
+			automaticallyConnectWS: true,
+			automaticallyConnectWebRTC: false,
 			webSocketConnectionChange: [],
 			variableSchedulerStateChange: [],
 			deviceConnectionChange:[],
@@ -123,7 +123,7 @@ class RemoteMe {
 			}
 		}
 
-		if (this.remoteMeConfig.automaticlyConnectWS) {
+		if (this.remoteMeConfig.automaticallyConnectWS) {
 			this.connectWebSocket();
 			window.setInterval((function () {
 				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this._reconnectWebSocketAttempts<15){
@@ -218,7 +218,7 @@ class RemoteMe {
 				this.sendWebSocket(ret.getBufferArray());
 			}).bind(this), 60000);
 
-			if (RemoteMe.thiz.remoteMeConfig.automaticlyConnectWebRTC){
+			if (RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC){
 				RemoteMe.thiz.connectWebRTC();
 			}
 		});
@@ -231,7 +231,7 @@ class RemoteMe {
 			this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
 		});
 
-		this.webSocket.onmessage = this.onMessageWS.bind(this);
+		this.webSocket.onmessage = this._onMessageWS.bind(this);
 
 	}
 
@@ -246,7 +246,7 @@ class RemoteMe {
 
 	}
 
-	onOffWebSocket() {
+	restartWebSocket() {
 		if (this.isWebSocketConnected()) {
 			this.disconnectWebSocket();
 		} else {
@@ -391,7 +391,7 @@ class RemoteMe {
 	}
 
 
-	onMessageWS(event) {
+	_onMessageWS(event) {
 		if (typeof event.data === 'string' || event.data instanceof String) {
 
 			{
@@ -406,7 +406,7 @@ class RemoteMe {
 
 				if (!ex) {
 					if (dataJson["cmd"] == "send") {
-						this.doHandlePeerMessage(dataJson["msg"]);
+						this._doHandlePeerMessage(dataJson["msg"]);
 					}
 				}
 			}
@@ -709,7 +709,7 @@ class RemoteMe {
 	}
 
 
-	doHandlePeerMessage(data) {
+	_doHandlePeerMessage(data) {
 		++this.messageCounter;
 		var dataJson = JSON.parse(data);
 		this.logTrace("Handle Message :", JSON.stringify(dataJson));
@@ -955,16 +955,16 @@ class RemoteMe {
 
 
 
-	setAutomaticlyConnectWebRTC() {
-		if (RemoteMe.thiz.isWebSocketConnected() && RemoteMe.thiz.remoteMeConfig.automaticlyConnectWebRTC==false) {
+	setautomaticallyConnectWebRTC() {
+		if (RemoteMe.thiz.isWebSocketConnected() && RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC==false) {
 			setTimeout(() => {
-				if (RemoteMe.thiz.remoteMeConfig.automaticlyConnectWebRTC == false && !RemoteMe.thiz.isWebRTCConnected()) {
+				if (RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC == false && !RemoteMe.thiz.isWebRTCConnected()) {
 					RemoteMe.thiz.connectWebRTC();
 				}
 			},1000);
 
 		}
-		RemoteMe.thiz.remoteMeConfig.automaticlyConnectWebRTC = true;
+		RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC = true;
 
 	}
 
@@ -1031,14 +1031,18 @@ class RemoteMe {
 
 	onOffDirectConnection() {
 		if (this.directWebSocket.length == 0) {
-			this.directWebSocketConnectionConnect();
+			this.connectDirectConnection();
 
 		} else {
 			this.disconnectDirectConnections();
 		}
 	}
 
-	directWebSocketConnectionConnect() {
+	getDirectConnectionCount() {
+		return this.directWebSocket.length;
+	}
+
+	connectDirectConnection() {
 
 
 		RemoteMeRest_getLocalWebSocketServers(data => {
@@ -1051,7 +1055,7 @@ class RemoteMe {
 					this.directWebSocket[device.deviceId].binaryType = "arraybuffer";
 					this.directWebSocket[device.deviceId].onmessage = (event) => {
 						console.info(`direct message got`);
-						this.onMessageWS(event);
+						this._onMessageWS(event);
 					};
 					this.directWebSocket[device.deviceId].variables = device.variables;
 

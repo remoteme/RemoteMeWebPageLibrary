@@ -6,6 +6,7 @@ class ToSend {
 		this.values = [];
 		this.directOnly=false;
 		this.hash=undefined;
+		this.ignoreCurrent=false;
 	}
 
 	isDirectOnly(){
@@ -218,48 +219,49 @@ class Variables {
 	}
 
 
-	setBoolean(name, value,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.BOOLEAN, [value],onlyDirectChannelsIfAny);
+	setBoolean(name, value,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.BOOLEAN, [value],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	setInteger(name, value,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.INTEGER, [value],onlyDirectChannelsIfAny);
+	setInteger(name, value,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.INTEGER, [value],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	setText(name, value,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.TEXT, [value],onlyDirectChannelsIfAny);
+	setText(name, value,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.TEXT, [value],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	setSmallInteger3(name, value, value2, value3,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.SMALL_INTEGER_3, [Math.round(value), Math.round(value2), Math.round(value3)],onlyDirectChannelsIfAny);
+	setSmallInteger3(name, value, value2, value3,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.SMALL_INTEGER_3, [Math.round(value), Math.round(value2), Math.round(value3)],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	setSmallInteger2(name, value, value2,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.SMALL_INTEGER_2, [value, value2],onlyDirectChannelsIfAny);
+	setSmallInteger2(name, value, value2,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.SMALL_INTEGER_2, [value, value2],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	setIntegerBoolean(name, value, value2,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.INTEGER_BOOLEAN, [value, value2],onlyDirectChannelsIfAny);
+	setIntegerBoolean(name, value, value2,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.INTEGER_BOOLEAN, [value, value2],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	setDouble(name, value,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.DOUBLE, [value],onlyDirectChannelsIfAny);
+	setDouble(name, value,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.DOUBLE, [value],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
 
-	setText2(name, value, value2,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.TEXT_2, [value, value2],onlyDirectChannelsIfAny);
+	setText2(name, value, value2,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.TEXT_2, [value, value2],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
-	setSmallInteger2Text2(name, value, value2,value3,value4,onlyDirectChannelsIfAny = false) {
-		this.set(name, VariableOberverType.SMALL_INTEGER_2_TEXT_2, [value, value2,value3,value4],onlyDirectChannelsIfAny);
+	setSmallInteger2Text2(name, value, value2,value3,value4,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
+		this.set(name, VariableOberverType.SMALL_INTEGER_2_TEXT_2, [value, value2,value3,value4],onlyDirectChannelsIfAny,ignoreCurrent);
 	}
 
-	set(name, type, values,onlyDirectChannelsIfAny = false) {
+	set(name, type, values,onlyDirectChannelsIfAny = false,ignoreCurrent=false) {
 		var current = new ToSend();
 		current.name = name;
 		current.type = type;
 		current.values = values;
 		current.directOnly=onlyDirectChannelsIfAny;
+		current.ignoreCurrent=ignoreCurrent;
 		this.toSend.push(current);
 
 		if (this.sendNow) {
@@ -311,8 +313,8 @@ class Variables {
 			return;
 		}
 
-		var ignoreDeviceId = [];
-		var ignoreHashes=[];
+		let ignoreDeviceId = [];
+		let ignoreHashes=[];
 
 		this.remoteMe.directWebSocket.forEach(webSocket => {
 			let toSend=this.filter(this.toSend, webSocket.variables);
@@ -340,15 +342,19 @@ class Variables {
 		}
 
 
-
+		let ignoreCurrent=false;
 		let toSend=[];
 		for (let current of this.toSend) {
 			if (ignoreHashes.length==0 || ignoreHashes.indexOf(current.getHash())==-1){
 				toSend.push(current);
 			}
+			ignoreCurrent|=toSend.ignoreCurrent;
 
 		}
 
+		if (ignoreCurrent){
+			ignoreDeviceId.push(thisDeviceId);
+		}
 		this.toSend = [];
 
 		if (toSend.length==0){
@@ -366,8 +372,8 @@ class Variables {
 		ret.putShort(thisDeviceId);
 
 		ret.putByte(ignoreDeviceId.length);
-		for (let current of ignoreDeviceId) {
-			ret.putShort(current);
+		for (let ignored of ignoreDeviceId) {
+			ret.putShort(ignored);
 		}
 
 

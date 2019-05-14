@@ -1617,7 +1617,7 @@ function addCamera(selector) {
 	replaceComponent(selector, box);
 
 	if (autoConnect) {
-		remoteme.setAutomaticlyConnectWebRTC();
+		remoteme.setautomaticallyConnectWebRTC();
 	}
 
 
@@ -1805,10 +1805,10 @@ function replace() {
 }
 
 $(document).ready(function () {
-	if (RemoteMe.thiz == undefined) {
-		remoteme = new RemoteMe();
-		remoteme.directWebSocketConnectionConnect();
-	}
+
+	remoteme=RemoteMe.getInstance();
+	remoteme.connectDirectConnection();
+
 	replace();
 	if (typeof doNotCreateRemoteMe !== 'undefined' && doNotCreateRemoteMe == true) {
 		remoteme.sendDirectWebsocket = () => {
