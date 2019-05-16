@@ -974,7 +974,7 @@ class RemoteMe {
 
 	sendUserMessageDirectWebsocket(receiveDeviceId, data) {
 		var toSend = getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data);
-		sendDirectWebsocket(receiveDeviceId, toSend);
+		this.sendDirectWebsocket(receiveDeviceId, toSend);
 
 	}
 
