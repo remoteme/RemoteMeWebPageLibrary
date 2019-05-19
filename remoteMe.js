@@ -16,7 +16,8 @@ ConnectingStatusEnum = {
 };
 EventSubscriberTypeEnum = {
 	DEVICE_CONNECTION: 0,
-	VARIABLE_SCHEDULER_STATE: 50
+	VARIABLE_SCHEDULER_STATE: 50,
+	FILE_CHANGE:70
 };
 
 
@@ -89,6 +90,7 @@ class RemoteMe {
 			webSocketConnectionChange: [],
 			variableSchedulerStateChange: [],
 			deviceConnectionChange:[],
+			deviceFileChange:[],
 			directConnectionChange: [],
 			webRtcConnectionChange: [],
 			remoteVideoElementId: "remoteVideo",
@@ -494,6 +496,14 @@ class RemoteMe {
 					x(deviceId,status);
 				});
 			}
+
+		}else if (ret.typeId == MessageType.DEVICE_FILE_CHANGE) {
+			data.popUint16();//take sieze
+			let deviceId = data.popUint16();
+			let fileName=data.popString();
+			this.remoteMeConfig.deviceFileChange.forEach(x=>{
+				x(deviceId,fileName);
+			});
 
 		}else if (ret.typeId == MessageType.VARIABLE_SCHEDULER_STATE_CHANGE) {
 			let count=data.popUint16()/5;

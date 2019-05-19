@@ -1409,6 +1409,8 @@ function getOnDeviceConnectionChange(cnt, icon, deviceToWatch) {
 	}
 }
 
+
+
 function addDeviceConnectionStatus(selector) {
 	let deviceId = getInteger("deviceId", $(selector), false);
 	let text = getString("text", $(selector), "");
@@ -1424,7 +1426,6 @@ function addDeviceConnectionStatus(selector) {
 	if (thisDeviceId == deviceId) {
 		let toCall = getOnDeviceConnectionChange(cnt, icon, thisDeviceId);
 		remoteme.remoteMeConfig.webSocketConnectionChange.push((status) => {
-			console.info(thisDeviceId+" "+status);
 			toCall(thisDeviceId, status == ConnectingStatusEnum.CONNECTED)
 		});
 
@@ -1716,6 +1717,8 @@ function replace() {
 	for (let i = 0; i < deviceConnectionStatus.length; i++) {
 		addDeviceConnectionStatus(deviceConnectionStatus[i]);
 	}
+
+
 
 
 	let multiVariableScheduler = $("variableschedulersstate");
