@@ -719,7 +719,7 @@ function addColorChange(selector) {
 	componentHandler.upgradeElement(dialog.get()[0]);
 
 	if (!dialog.get()[0].showModal) {
-		dialogPolyfill.registerDialog(get()[0]);
+		dialogPolyfill.registerDialog(dialog.get()[0]);
 	}
 
 
@@ -1578,7 +1578,7 @@ function addCamera(selector) {
 
 		remoteme.remoteMeConfig.webRtcConnectionChange.push((state) => {
 			if (!dialog.get()[0].showModal) {
-				dialogPolyfill.registerDialog(dialogX);
+				dialogPolyfill.registerDialog(dialog.get()[0]);
 			}
 
 
