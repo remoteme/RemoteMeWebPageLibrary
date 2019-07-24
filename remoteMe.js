@@ -441,27 +441,52 @@ class RemoteMe {
 			}
 
 
-		} else if (ret.typeId == MessageType.USER_SYNC_MESSAGE) {
+		}else if (ret.typeId == MessageType.USER_MESSAGE_WEBPAGE_TOKEN) {
 			ret.size = data.popInt16();
+			let renevalWhenFailTypeId = data.popByte();
+			let receiveDeviceId = data.popUint16();
+			let senderDeviceId = data.popUint16();
 
-			ret.receiveDeviceId = data.popUint16();
-			ret.senderDeviceId = data.popUint16();
-			ret.messageId = data.popInt64();
+			let sessionId= remoteMeData.popInt16();
+			let credit= remoteMeData.popInt16();
+			let time= remoteMeData.popInt16();
 
-			ret.data = data.popRestBuffer();
 
-			if (this.remoteMeConfig.onUserSyncMessage != undefined) {
-				var functionRet = this.remoteMeConfig.onUserSyncMessage(ret.senderDeviceId, ret.data);
+			let data = data.popRestBuffer();
 
-				var toSend = getUserSyncResponseMessage(ret.messageId, functionRet);
-				if (this.isWebSocketConnected()) {
-					this.sendWebSocket(toSend);
-				} else {
-					this.sendRest(toSend);
-				}
-			} else {
-				console.error("Sync message came but no function to handle it");
+			if (this.remoteMeConfig.onUserMessage != undefined) {
+				this.remoteMeConfig.onUserMessage(senderDeviceId, data);
 			}
+
+
+		} else if (ret.typeId == MessageType.USER_SYNC_MESSAGE) {
+			let size = data.popInt16();
+
+			let receiveDeviceId = data.popUint16();
+			let senderDeviceId = data.popUint16();
+			let messageId = data.popInt64();
+
+			let data = data.popRestBuffer();
+
+			this._onUserSyncMessage(senderDeviceId, data, messageId);
+
+
+		}else if (ret.typeId == MessageType.USER_SYNC_MESSAGE_WEBPAGE_TOKEN) {
+			let size = data.popInt16();
+
+			let receiveDeviceId = data.popUint16();
+			let senderDeviceId = data.popUint16();
+
+			let sessionId= remoteMeData.popInt16();
+			let credit= remoteMeData.popInt16();
+			let time= remoteMeData.popInt16();
+
+
+			let messageId = data.popInt64();
+
+			let data = data.popRestBuffer();
+
+			this._onUserSyncMessage(senderDeviceId, data, messageId);
 
 
 		} else if (ret.typeId == MessageType.SYNC_MESSAGE_RESPONSE) {
@@ -483,7 +508,10 @@ class RemoteMe {
 		} else if (ret.typeId == MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE) {
 			this.getVariables()._onObserverPropagateMessage(data);
 
-		} else if (ret.typeId == MessageType.VARIABLE_CHANGE_MESSAGE) {
+		}else if (ret.typeId == MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE_WEBPAGE_TOKEN) {
+			this.getVariables()._onObserverPropagateMessageWebToken(data);
+
+		}  else if (ret.typeId == MessageType.VARIABLE_CHANGE_MESSAGE) {
 			this.getVariables()._onObserverChangeMessage(data);
 
 		} else if (ret.typeId == MessageType.DEVICE_CONNECTION_CHANGE) {
@@ -528,6 +556,21 @@ class RemoteMe {
 
 	}
 
+
+	_onUserSyncMessage(senderDeviceId, data, messageId) {
+		if (this.remoteMeConfig.onUserSyncMessage != undefined) {
+			let functionRet = this.remoteMeConfig.onUserSyncMessage(senderDeviceId, data);
+
+			let toSend = getUserSyncResponseMessage(messageId, functionRet);
+			if (this.isWebSocketConnected()) {
+				this.sendWebSocket(toSend);
+			} else {
+				this.sendRest(toSend);
+			}
+		} else {
+			console.error("Sync message came but no function to handle it");
+		}
+	}
 
 //--------------- webrtc
 

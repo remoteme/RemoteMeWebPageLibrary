@@ -158,6 +158,19 @@ class Variables {
 		remoteMeData.popInt16();//size
 		var senderDeviceId = remoteMeData.popInt16();
 		var targetDeviceId= remoteMeData.popInt16();
+
+		this._onObserverPropagateMessageP(senderDeviceId,targetDeviceId,remoteMeData);
+	}
+
+	_onObserverPropagateMessageWebToken(remoteMeData){
+		remoteMeData.popInt16();//size
+		var senderDeviceId = remoteMeData.popInt16();
+		var targetDeviceId= remoteMeData.popInt16();
+
+		var sessionId= remoteMeData.popInt16();
+		var credit= remoteMeData.popInt16();
+		var time= remoteMeData.popInt16();
+
 		this._onObserverPropagateMessageP(senderDeviceId,targetDeviceId,remoteMeData);
 	}
 
