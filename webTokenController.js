@@ -8,12 +8,12 @@ window.onload=function () {
 	setInterval(function(){
 		ping();
 	},1000);
-/*
+
 
 	webTokenLandingWebSocket = new WebSocket(getWebTokenLandingWebSocketAddress());
 	webTokenLandingWebSocket.binaryType = "arraybuffer";
 	webTokenLandingWebSocket.onmessage = onMessageWebTokenLandingWebSocket;
-*/
+	getWebTokenInfo();
 
 
 };
@@ -29,7 +29,20 @@ function ping(){
 	xhttp.send();
 }
 
+function getWebTokenInfo(){
+	var url ="/inner/tokenLanding/getWebTokenInfo/";
+	var xhttp = new XMLHttpRequest();
 
+	xhttp.addEventListener("load", function(){
+		if (this.status==200){
+			updateTimeAndCredit(JSON.parse(this.response));
+		}
+	});
+
+	xhttp.open("GET", url,true);
+
+	xhttp.send();
+}
 
 
 
@@ -52,14 +65,15 @@ function onMessageWebTokenLandingWebSocket(event){
 		dataJson=JSON.parse(dataJson.dataS);
 		console.info(dataJson);
 		updateTimeAndCredit(dataJson);
-		if (dataJson.expirationTime==null){
-			redirectToTokenLanding();
-		}
+
 	}
 
 }
 function updateTimeAndCredit(dataJson){
-	expirationTime=dataJson.expirationTime
+
+
+
+	RemoteMe.getInstance().setWebPageTokenProperties(new WebPageTokenProperties(dataJson.deviceSessionId,dataJson.expirationTime,dataJson.credit));
 
 }
 

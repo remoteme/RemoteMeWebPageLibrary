@@ -20,7 +20,18 @@ EventSubscriberTypeEnum = {
 	FILE_CHANGE:70
 };
 
+class WebPageTokenProperties{
+	constructor(deviceSessionId,expirationTime,credit){
+		this.deviceSessionId=deviceSessionId;
+		this.expirationTime=expirationTime;
+		this.credit=credit;
+	}
 
+
+	getRestTime(){
+		return Math.round((this.expirationTime-Date.now())/1000)
+	}
+}
 class Guard{
 	constructor(name,messagesPer3s = 5) {
 		this.messagesPer3s=messagesPer3s;
@@ -117,6 +128,9 @@ class RemoteMe {
 		this.variables = undefined;
 		this._webSocketGuard=new Guard("websocket send",12);
 		this._restGuard=new Guard("rest guard",8);
+
+
+		this._webPageTokenProperties=undefined;
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
@@ -398,7 +412,6 @@ class RemoteMe {
 
 			{
 				var ex = false;
-				this.log("got websocket config ")
 				try {
 					var dataJson = JSON.parse(event.data);
 				}
@@ -1032,7 +1045,12 @@ class RemoteMe {
 	}
 
 	sendUserMessageWebrtc(receiveDeviceId, data) {
-		this.sendWebRtc(getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data));
+		if (this._webPageTokenProperties!=undefined){
+			this.sendWebRtc(getUserMessageWebPageToken(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId,this._webPageTokenProperties.deviceSessionId,
+				this._webPageTokenProperties.credit,this._webPageTokenProperties.getRestTime(), data));
+		}else{
+			this.sendWebRtc(getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data));
+		}
 	}
 
 	sendUserMessageRest(receiveDeviceId, data) {
@@ -1213,6 +1231,10 @@ class RemoteMe {
 			}
 			this.sendWebRTCConnectionStatusChangeMessage(thisDeviceId, raspberryPiDeviceId, status);
 		}
+	}
+
+	setWebPageTokenProperties(webPageTokenProperties){
+		this._webPageTokenProperties=webPageTokenProperties;
 	}
 }
 

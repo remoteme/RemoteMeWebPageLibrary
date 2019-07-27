@@ -283,12 +283,40 @@ function getUserMessage( userMessageSettings, receiverDeviceId,senderDeviceId, m
 	var ret = new RemoteMeData(4+size);
 
 
+
 	ret.putShort(MessageType.USER_MESSAGE);
 	ret.putShort(size);
 	ret.putByte(userMessageSettings);
 	ret.putShort(receiverDeviceId);
 	ret.putShort(senderDeviceId);
 	ret.putShort(messageId);
+	ret.putArray(data);
+
+	return ret.getBufferArray();
+
+}
+
+
+function getUserMessageWebPageToken( userMessageSettings, receiverDeviceId,senderDeviceId, deviceSessionId,credit,time, data) {
+
+	data=getArray(data);
+
+
+	size=10+1+data.length;
+	var ret = new RemoteMeData(4+size);
+
+
+
+	ret.putShort(MessageType.USER_MESSAGE_WEBPAGE_TOKEN);
+	ret.putShort(size);
+	ret.putByte(userMessageSettings);
+	ret.putShort(receiverDeviceId);
+	ret.putShort(senderDeviceId);
+
+	ret.putShort(sessionId);
+	ret.putShort(credit);
+	ret.putShort(time);
+
 	ret.putArray(data);
 
 	return ret.getBufferArray();
