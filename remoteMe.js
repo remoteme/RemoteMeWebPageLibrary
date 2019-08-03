@@ -21,8 +21,9 @@ EventSubscriberTypeEnum = {
 };
 
 class WebPageTokenProperties{
-	constructor(deviceSessionId,expirationTime,credit){
+	constructor(deviceSessionId,identifier,expirationTime,credit){
 		this.deviceSessionId=deviceSessionId;
+		this.identifier=identifier;
 		this.expirationTime=expirationTime;
 		this.credit=credit;
 	}
@@ -460,9 +461,10 @@ class RemoteMe {
 			let receiveDeviceId = data.popUint16();
 			let senderDeviceId = data.popUint16();
 
-			let sessionId= remoteMeData.popInt16();
-			let credit= remoteMeData.popInt16();
-			let time= remoteMeData.popInt16();
+			let sessionId= remoteMeData.popUint16();
+			let identifier= remoteMeData.popUint16();
+			let credit= remoteMeData.popUint16();
+			let time= remoteMeData.popUint16();
 
 
 			let data = data.popRestBuffer();
@@ -490,9 +492,10 @@ class RemoteMe {
 			let receiveDeviceId = data.popUint16();
 			let senderDeviceId = data.popUint16();
 
-			let sessionId= remoteMeData.popInt16();
-			let credit= remoteMeData.popInt16();
-			let time= remoteMeData.popInt16();
+			let sessionId= remoteMeData.popUint16();
+			let identifier= remoteMeData.popUint16();
+			let credit= remoteMeData.popUint16();
+			let time= remoteMeData.popUint16();
 
 
 			let messageId = data.popInt64();
@@ -1047,7 +1050,7 @@ class RemoteMe {
 	sendUserMessageWebrtc(receiveDeviceId, data) {
 		if (this._webPageTokenProperties!=undefined){
 			this.sendWebRtc(getUserMessageWebPageToken(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId,this._webPageTokenProperties.deviceSessionId,
-				this._webPageTokenProperties.credit,this._webPageTokenProperties.getRestTime(), data));
+				this._webPageTokenProperties.identifier,this._webPageTokenProperties.credit,this._webPageTokenProperties.getRestTime(), data));
 		}else{
 			this.sendWebRtc(getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data));
 		}

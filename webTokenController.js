@@ -35,7 +35,7 @@ function getWebTokenInfo(){
 
 	xhttp.addEventListener("load", function(){
 		if (this.status==200){
-			updateTimeAndCredit(JSON.parse(this.response));
+			updateWebTokenProperties(JSON.parse(this.response));
 		}
 	});
 
@@ -64,16 +64,16 @@ function onMessageWebTokenLandingWebSocket(event){
 	if (dataJson.type=="TOKEN_INFO_CHANGE"){
 		dataJson=JSON.parse(dataJson.dataS);
 		console.info(dataJson);
-		updateTimeAndCredit(dataJson);
+		updateWebTokenProperties(dataJson);
 
 	}
 
 }
-function updateTimeAndCredit(dataJson){
+function updateWebTokenProperties(dataJson){
 
 
 
-	RemoteMe.getInstance().setWebPageTokenProperties(new WebPageTokenProperties(dataJson.deviceSessionId,dataJson.expirationTime,dataJson.credit));
+	RemoteMe.getInstance().setWebPageTokenProperties(new WebPageTokenProperties(dataJson.deviceSessionId,dataJson.identifier,dataJson.expirationTime,dataJson.credit));
 
 }
 
