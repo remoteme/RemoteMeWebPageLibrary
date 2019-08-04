@@ -135,9 +135,10 @@ class RemoteMe {
 			remoteVideoElementId: "remoteVideo",
 			onUserMessage: undefined,
 			onUserSyncMessage: undefined,
+			onWebTokenChange:[],
 			pcConfig: {"iceServers": [{"urls": "stun:stun.l.google.com:19302"}]},
 			pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
-			mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}}
+			mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}},
 		};
 		this._reconnectWebSocketAttempts=0;
 
@@ -1294,7 +1295,11 @@ class RemoteMe {
 			}else{
 				componentDisabled.enable();
 			}
-		})
+		});
+
+		this.remoteMeConfig.onWebTokenChange.forEach(f => f(webPageTokenProperties));
+
+
 	}
 }
 
