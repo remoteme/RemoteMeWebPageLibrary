@@ -65,6 +65,33 @@ class Guard{
 
 }
 
+class ComponentDisabled{
+
+	constructor(credit,disable,enable){
+		this._credit=credit;
+		this._disable=disable;
+		this._enable=enable;
+		this.enabled=true;
+	}
+
+	getCredit(){
+		return this._credit;
+	}
+	enable(){
+		if (!this.enabled){
+			this.enabled=true;
+			this._enable();
+		}
+	}
+
+	disable(){
+		if (this.enabled){
+			this.enabled=false;
+			this._disable();
+		}
+	}
+}
+
 // Class: RemoteMe
 // A Main class to communicate with remoteMe system
 class RemoteMe {
@@ -130,6 +157,7 @@ class RemoteMe {
 		this._webSocketGuard=new Guard("websocket send",12);
 		this._restGuard=new Guard("rest guard",8);
 
+		this._componentsDisabled=[];
 
 		this._webPageTokenProperties=undefined;
 
@@ -160,6 +188,28 @@ class RemoteMe {
 
 
 		}.bind(this);
+	}
+
+	/*disableAllComponent(){
+		this._componentsDisabled.forEach(x=>{
+			x.disable();
+		})
+	}
+
+	enableAllComponent(){
+		this._componentsDisabled.forEach(x=>{
+			x.enable();
+		})
+	}*/
+
+	addComponentDisabled(credit,disable,enable){
+		if (credit!= undefined && credit>0){
+			var componentDisabled = new ComponentDisabled(credit,disable,enable);
+			this._componentsDisabled.push(componentDisabled);
+			if (this._webPageTokenProperties != undefined && componentDisabled.getCredit()>this._webPageTokenProperties.credit){
+				x.disable();
+			}
+		}
 	}
 
 	subscribeEvent(eventId){
@@ -1238,6 +1288,13 @@ class RemoteMe {
 
 	setWebPageTokenProperties(webPageTokenProperties){
 		this._webPageTokenProperties=webPageTokenProperties;
+		this._componentsDisabled.forEach(componentDisabled=>{
+			if (this._webPageTokenProperties != undefined && (componentDisabled.getCredit()>this._webPageTokenProperties.credit)){
+				componentDisabled.disable();
+			}else{
+				componentDisabled.enable();
+			}
+		})
 	}
 }
 

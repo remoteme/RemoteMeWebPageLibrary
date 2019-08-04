@@ -50,37 +50,39 @@ $.fn.extend({
 class TwoWayMapper {
 
 	constructor() {
-		this.keys=[];
-		this.reverseKeys=[];
+		this.keys = [];
+		this.reverseKeys = [];
 
-		this.normal=[];
-		this.reverse=[];
+		this.normal = [];
+		this.reverse = [];
 	}
 
-	add(key1,key2){
-		this.normal[key1]=key2;
-		this.reverse[key2]=key1;
+	add(key1, key2) {
+		this.normal[key1] = key2;
+		this.reverse[key2] = key1;
 
-		if (this.keys.indexOf(key1)==-1){
+		if (this.keys.indexOf(key1) == -1) {
 			this.keys.push(key1)
 		}
 
-		if (this.reverse.indexOf(key2)==-1){
+		if (this.reverse.indexOf(key2) == -1) {
 			this.reverse.push(key2)
 		}
 	}
 
-	get(key){
+	get(key) {
 		return this.normal[key1];
 	}
-	getReverse(){
+
+	getReverse() {
 		return this.reverse[key];
 	}
-	getKeys(){
+
+	getKeys() {
 		return this.keys;
 	}
 
-	getReverseKeys(){
+	getReverseKeys() {
 		return this.reverseKeys;
 	}
 }
@@ -278,6 +280,7 @@ class Gyroscope {
 class Touch {
 
 	constructor(selector, xMin, xMax, yMin, yMax, onMove) {
+		this.disabled=false;
 
 		this.onMoveReal = onMove;
 		this.xMin = xMin;
@@ -289,7 +292,7 @@ class Touch {
 
 		let clazz = "steerParent";
 		if ($(selector).attr("class") != undefined) {
-			clazz += " "+$(selector).attr("class");
+			clazz += " " + $(selector).attr("class");
 			$(selector).removeAttr("class");
 		}
 
@@ -309,23 +312,25 @@ class Touch {
 		this.steerParent.touchElement = this;
 
 		var onTouchStart = e => {
-			var touch = e.data;
-			touch.move = true;
-			var touchEvent = touch.getTouchEvent(e);
+			if (!this.disabled) {
+				var touch = e.data;
+				touch.move = true;
+				var touchEvent = touch.getTouchEvent(e);
 
-			var top = touchEvent.pageY - touch.steerParent.offset().top;
-			var left = touchEvent.pageX - touch.steerParent.offset().left;
-
-
-			touch.deltaOffsetX = touchEvent.clientX;
-			touch.deltaOffsetY = touchEvent.clientY;
+				var top = touchEvent.pageY - touch.steerParent.offset().top;
+				var left = touchEvent.pageX - touch.steerParent.offset().left;
 
 
-			touch.steerParent.addClass('active');
+				touch.deltaOffsetX = touchEvent.clientX;
+				touch.deltaOffsetY = touchEvent.clientY;
 
-			touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
-			touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
-			touch.onMove(0, 0);
+
+				touch.steerParent.addClass('active');
+
+				touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
+				touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
+				touch.onMove(0, 0);
+			}
 		};
 
 
@@ -345,27 +350,28 @@ class Touch {
 			touch.onMove(0, 0);
 		};
 		var onTouchMove = e => {
-			e.preventDefault();
-			var touch = e.data;
+			if (!this.disabled) {
+				e.preventDefault();
+				var touch = e.data;
 
-			if (touch.move) {
-				var touchEvent = touch.getTouchEvent(e);
+				if (touch.move) {
+					var touchEvent = touch.getTouchEvent(e);
 
-				var top = touchEvent.pageY - touch.steerParent.offset().top;
-				var left = touchEvent.pageX - touch.steerParent.offset().left;
+					var top = touchEvent.pageY - touch.steerParent.offset().top;
+					var left = touchEvent.pageX - touch.steerParent.offset().left;
 
-				touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
-				touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
+					touch.pointer.css('top', top - touch.pointer.height() / 2 + "px");
+					touch.pointer.css('left', left - touch.pointer.width() / 2 + "px");
 
-				var xposition = -(touch.deltaOffsetX - touchEvent.clientX) / (touch.steerParent.width() / 2);
-				var yposition = (touch.deltaOffsetY - touchEvent.clientY) / (touch.steerParent.height() / 2);
+					var xposition = -(touch.deltaOffsetX - touchEvent.clientX) / (touch.steerParent.width() / 2);
+					var yposition = (touch.deltaOffsetY - touchEvent.clientY) / (touch.steerParent.height() / 2);
 
-				xposition = touch.range(xposition);
-				yposition = touch.range(yposition);
+					xposition = touch.range(xposition);
+					yposition = touch.range(yposition);
 
-				touch.onMove(xposition, yposition);
+					touch.onMove(xposition, yposition);
+				}
 			}
-
 
 		};
 
@@ -382,19 +388,33 @@ class Touch {
 
 	}
 
+
+	disable(disabled = true) {
+		this.disabled=disabled;
+		if (disabled){
+			$(this.pointer).addClass("disabled");
+		}else{
+			$(this.pointer).removeClass("disabled");
+
+		}
+	}
+
 	onMove(x, y) {
-		x = Math.round(getProportional(this.xMin, this.xMax, x));
-		y = Math.round(getProportional(this.yMin, this.yMax, y));
+		if (!this.disabled){
+			x = Math.round(getProportional(this.xMin, this.xMax, x));
+			y = Math.round(getProportional(this.yMin, this.yMax, y));
 
-		if (x == 0 && y == 0) {
-			this.text.text("");
-		} else {
-			this.text.html(this.toFixes(x, this.xMin, this.xMax) + " " + this.toFixes(y, this.yMin, this.yMax));
+			if (x == 0 && y == 0) {
+				this.text.text("");
+			} else {
+				this.text.html(this.toFixes(x, this.xMin, this.xMax) + " " + this.toFixes(y, this.yMin, this.yMax));
+			}
+
+			if (this.onMoveReal != undefined) {
+				this.onMoveReal(x, y);
+			}
 		}
 
-		if (this.onMoveReal != undefined) {
-			this.onMoveReal(x, y);
-		}
 	}
 
 	range(number) {
@@ -408,6 +428,7 @@ class Touch {
 	}
 
 	getTouchEvent(e) {
+
 		if (e.changedTouches == undefined) {//probably mouses
 			return e;
 		}
@@ -446,17 +467,17 @@ class Touch {
 }
 
 
-var multiSwitchUID=0;
+var multiSwitchUID = 0;
+
 class MultiSwitch {
 
 
+	constructor(selector, label, items, onMainChangeEvent, onSingleChangeEvent) {
+		this.id = "multiSwitchUID" + (multiSwitchUID++);
+		this.onMainChangeEvent = onMainChangeEvent;
+		this.onSingleChangeEvent = onSingleChangeEvent;
 
-	constructor(selector,label,items,onMainChangeEvent,onSingleChangeEvent) {
-		this.id="multiSwitchUID"+(multiSwitchUID++);
-		this.onMainChangeEvent=onMainChangeEvent;
-		this.onSingleChangeEvent=onSingleChangeEvent;
-
-		this.count=0;
+		this.count = 0;
 
 
 		this.container = $(`<div class="mdl-textfield mdl-js-textfield getmdl-extend">
@@ -473,26 +494,26 @@ class MultiSwitch {
         </ul>
     </div>`);
 
-		this.mainCheckBoxElement=this.container.children("label");
+		this.mainCheckBoxElement = this.container.children("label");
 
 		let checkbox = this.mainCheckBoxElement.children("input");
 
-		var thiz=this;
+		var thiz = this;
 
 		checkbox.change(function () {
-			setTimeout(thiz.onMainChange.bind(thiz),0);
+			setTimeout(thiz.onMainChange.bind(thiz), 0);
 
 		});
 
 
-		this.checkBoxElements=[];
+		this.checkBoxElements = [];
 
 		selector.replaceWith(this.container[0]);
 
 
-		for(let i=0;i<items.length;i++){
+		for (let i = 0; i < items.length; i++) {
 			this.count++;
-			let itemId=this.id+"_"+i;
+			let itemId = this.id + "_" + i;
 
 			let checkBoxElement = $(` <li class="mdl-menu__item" >
                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch_${this.id}_${itemId}" >
@@ -508,7 +529,7 @@ class MultiSwitch {
 			this.container.children('.mdl-menu').append(checkBoxElement);
 
 			checkbox.change(function () {
-				setTimeout(thiz.onSingleItemChange.bind(thiz),0,i);
+				setTimeout(thiz.onSingleItemChange.bind(thiz), 0, i);
 
 			});
 			componentHandler.upgradeElement(this.checkBoxElements[i][0]);
@@ -517,54 +538,53 @@ class MultiSwitch {
 		}
 
 
-
 		componentHandler.upgradeElement(this.mainCheckBoxElement[0]);
 		componentHandler.upgradeElement(this.container[0]);
 		componentHandler.upgradeElement(this.container.children(".mdl-icon-toggle__label")[0]);
 		componentHandler.upgradeElement(this.container.children(".mdl-menu")[0]);
 	}
 
-	isItemSelected(id){
+	isItemSelected(id) {
 		return this.checkBoxElements[id].is('.is-checked');
 	}
 
-	isMainSelected(){
+	isMainSelected() {
 		return this.mainCheckBoxElement.is('.is-checked');
 	}
 
-	refreshMain(){
-		let selectedCount=0;
-		for(let i=0;i<this.count;i++){
-			if (this.isItemSelected(i)){
+	refreshMain() {
+		let selectedCount = 0;
+		for (let i = 0; i < this.count; i++) {
+			if (this.isItemSelected(i)) {
 				selectedCount++;
 			}
 		}
 
-		if (selectedCount==0){
-			this.setMain(false,false);
-		}else if (selectedCount==this.count){
-			this.setMain(true,false);
-		}else{
+		if (selectedCount == 0) {
+			this.setMain(false, false);
+		} else if (selectedCount == this.count) {
+			this.setMain(true, false);
+		} else {
 			this.setMainUndefined();
 		}
 	}
 
-	refreshItemsBasedOnMain(){
-		let val=this.isMainSelected();
-		for(let i=0;i<this.count;i++){
-			this.setSingleElement(i,val);
+	refreshItemsBasedOnMain() {
+		let val = this.isMainSelected();
+		for (let i = 0; i < this.count; i++) {
+			this.setSingleElement(i, val);
 		}
 	}
 
-	onSingleItemChange(id){
+	onSingleItemChange(id) {
 
 		this.refreshMain();
 
-		this.onSingleChangeEvent(id,this.isItemSelected(id));
+		this.onSingleChangeEvent(id, this.isItemSelected(id));
 
 	}
 
-	setSingleElement(id,val){
+	setSingleElement(id, val) {
 		if (val) {
 			this.checkBoxElements[id].get()[0].MaterialSwitch.on();
 		} else {
@@ -576,7 +596,7 @@ class MultiSwitch {
 	}
 
 
-	onMainChange(){
+	onMainChange() {
 		this.clearMainUndefined();
 
 		this.onMainChangeEvent(this.isMainSelected());
@@ -584,20 +604,20 @@ class MultiSwitch {
 
 	}
 
-	clearMainUndefined(){
-		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('left','');
-		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('background-color','');
-		this.mainCheckBoxElement.children('.mdl-switch__track').css('background-color','');
+	clearMainUndefined() {
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('left', '');
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('background-color', '');
+		this.mainCheckBoxElement.children('.mdl-switch__track').css('background-color', '');
 	}
 
-	setMainUndefined(){
+	setMainUndefined() {
 		this.mainCheckBoxElement.get()[0].MaterialSwitch.off();
-		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('left','8px');
-		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('background-color','#b1b1b1');
-		this.mainCheckBoxElement.children('.mdl-switch__track').css('background-color','#777777');
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('left', '8px');
+		this.mainCheckBoxElement.children('.mdl-switch__thumb').css('background-color', '#b1b1b1');
+		this.mainCheckBoxElement.children('.mdl-switch__track').css('background-color', '#777777');
 	}
 
-	setMain(val,callRefresh=true){
+	setMain(val, callRefresh = true) {
 		this.clearMainUndefined();
 		if (val) {
 			this.mainCheckBoxElement.get()[0].MaterialSwitch.on();
@@ -605,9 +625,9 @@ class MultiSwitch {
 			this.mainCheckBoxElement.get()[0].MaterialSwitch.off();
 		}
 
-		if (callRefresh){
-			let thiz=this;
-			setTimeout(thiz.refreshItemsBasedOnMain.bind(thiz),0);
+		if (callRefresh) {
+			let thiz = this;
+			setTimeout(thiz.refreshItemsBasedOnMain.bind(thiz), 0);
 		}
 
 	}
@@ -638,7 +658,10 @@ function readProperties(selector) {
 	var disabled = false;
 	disabled = $(selector).attr("disabled") != undefined;
 
-	return {name: name, label: label, disabled: disabled, min: min, max: max, disabled: disabled};
+	let minCreditForRental=getInteger("minCreditForRental", $(selector), 0);
+
+
+	return {name: name, label: label, disabled: disabled, min: min, max: max, disabled: disabled,minCreditForRental:minCreditForRental};
 
 
 }
@@ -658,13 +681,22 @@ function addButton(selector) {
 
 	if (!prop.disabled) {
 		$(element).click(() => {
-			var value = !$(element).hasClass("mdl-button--accent");
-			remoteme.getVariables().setBoolean(prop.name, value);
+			if (!prop.disabled) {
+				var value = !$(element).hasClass("mdl-button--accent");
+				RemoteMe.getInstance().getVariables().setBoolean(prop.name, value);
+			}
+		});
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(element).prop("disabled", true);
+		}, x => {
+			$(element).prop("disabled", false);
 		});
 	}
 
 	replaceComponent(selector, element);
 	componentHandler.upgradeElement(element.get()[0]);
+
+
 }
 
 
@@ -727,7 +759,16 @@ function addColorChange(selector) {
 
 	if (!prop.disabled) {
 		$(button).click(() => {
-			dialog.get()[0].showModal();
+			if (!prop.disabled) {
+				dialog.get()[0].showModal();
+			}
+		});
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(button).prop("disabled", true);
+			prop.disabled = true;
+		}, x => {
+			$(button).prop("disabled", false);
+			prop.disabled = false;
 		});
 	}
 
@@ -750,6 +791,7 @@ function addColorChange(selector) {
 	$("body").append(dialog);
 	componentHandler.upgradeElement(button.get()[0]);
 
+
 }
 
 function addCheckBox(selector, switchMode = false) {
@@ -771,14 +813,36 @@ function addCheckBox(selector, switchMode = false) {
 	`);
 	}
 
-
 	var checkbox = checkBoxElement.find("input");
 
+	if (!prop.disabled) {
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(checkBoxElement).prop("disabled", true);
+			$(checkBoxElement).find("input").prop("disabled", true);
+			if (switchMode) {
+					checkBoxElement.get()[0].MaterialSwitch.disable();
+			} else {
+				checkBoxElement.get()[0].MaterialCheckbox.disable();
+			}
 
-	checkbox.change(function () {
-		remoteme.getVariables().setBoolean(prop.name, !checkBoxElement.is('.is-checked'));
+			prop.disabled = true;
+		}, x => {
+			$(checkBoxElement).prop("disabled", false);
+			$(checkBoxElement).find("input").prop("disabled", false);
+			if (switchMode) {
+				checkBoxElement.get()[0].MaterialSwitch.enable();
+			} else {
+				checkBoxElement.get()[0].MaterialCheckbox.enable();
+			}
+			prop.disabled = false;
+		});
+		checkbox.change(function () {
+			if (!prop.disabled) {
+				remoteme.getVariables().setBoolean(prop.name, !checkBoxElement.is('.is-checked'));
+			}
+		});
+	}
 
-	});
 
 	remoteme.getVariables().observeBoolean(prop.name, x => {
 		if (switchMode) {
@@ -850,34 +914,50 @@ function addXSliders(selector, count) {
 
 
 	var onChange;
-	if (count == 1) {
-		onChange = (() => {
-			otChange200.execute(() => {
-				remoteme.getVariables().setInteger(prop.name, sliders[0].val(), onlyDirect);
-			});
 
-		});
-	} else if (count == 2) {
-		onChange = (() => {
-			otChange200.execute(() => {
-				remoteme.getVariables().setSmallInteger2(prop.name, sliders[0].val(), sliders[1].val(), onlyDirect);
-			});
+	if (!prop.disabled) {
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			for (let i = 0; i < count; i++) {
+				sliders[i].prop("disabled", true);
+			}
 
-		});
-	} else if (count == 3) {
-		onChange = (() => {
-			otChange200.execute(() => {
-				remoteme.getVariables().setSmallInteger3(prop.name, sliders[0].val(), sliders[1].val(), sliders[2].val(), onlyDirect);
-			});
 
+		}, x => {
+			for (let i = 0; i < count; i++) {
+				sliders[i].prop("disabled", false);
+			}
 		});
+
+
+		if (count == 1) {
+			onChange = (() => {
+				otChange200.execute(() => {
+					remoteme.getVariables().setInteger(prop.name, sliders[0].val(), onlyDirect);
+				});
+
+			});
+		} else if (count == 2) {
+			onChange = (() => {
+				otChange200.execute(() => {
+					remoteme.getVariables().setSmallInteger2(prop.name, sliders[0].val(), sliders[1].val(), onlyDirect);
+				});
+
+			});
+		} else if (count == 3) {
+			onChange = (() => {
+				otChange200.execute(() => {
+					remoteme.getVariables().setSmallInteger3(prop.name, sliders[0].val(), sliders[1].val(), sliders[2].val(), onlyDirect);
+				});
+
+			});
+		}
+
+		for (let i = 0; i < count; i++) {
+			box.append(elements[i]);
+			sliders[i].on('input', onChange);
+		}
 	}
 
-
-	for (let i = 0; i < count; i++) {
-		box.append(elements[i]);
-		sliders[i].on('input', onChange);
-	}
 
 	if (count == 1) {
 		remoteme.getVariables().observeInteger(prop.name, x => {
@@ -1001,6 +1081,25 @@ function addList(selector, variableType) {
 	var ul = element.find('ul').get(0);
 	if (prop.disabled) {
 		$(ul).css("display", "none");
+	} else {
+		element.get()[0].onChange = (val) => {
+			if (!prop.disabled) {
+				remoteme.getVariables().set(prop.name, variableType, [val]);
+			}
+		};
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(element).prop("disabled", true);
+			$(element).find("input").prop("disabled", true);
+			$(element).find("i").css("display", "none");
+			$(ul).css("display", "none");
+			prop.disabled = true;
+		}, x => {
+			$(element).prop("disabled", false);
+			$(element).find("input").prop("disabled", false);
+			$(ul).css("display", "block");
+			$(element).find("i").css("display", "block");
+			prop.disabled = false;
+		});
 	}
 
 	var toInsert = $(selector).find("option");
@@ -1012,10 +1111,6 @@ function addList(selector, variableType) {
 		$(ul).append($(`<li class="mdl-menu__item" data-val="${val}">${label}</li>`));
 	}
 	element.get()[0].disabled = prop.disabled;
-
-	element.get()[0].onChange = (val) => {
-		remoteme.getVariables().set(prop.name, variableType, [val]);
-	};
 
 
 	remoteme.getVariables().observe(prop.name, variableType, x => {
@@ -1057,12 +1152,29 @@ function addRadios(selector, variableType) {
 		var checkboxZ = toInsertElement.find("input");
 
 		checkboxZ.change(function (s) {
-			remoteme.getVariables().set(prop.name, variableType, [$(s.currentTarget).attr("value")]);
+			if (!prop.disabled) {
+				remoteme.getVariables().set(prop.name, variableType, [$(s.currentTarget).attr("value")]);
+			}
 		});
 		box.append(toInsertElement);
 		elements[val] = (toInsertElement);
 
 
+	}
+
+	if (!prop.disabled) {
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(box).find("input").prop("disabled", true);
+			for (let el in elements) {
+				elements[el][0].MaterialRadio.disable();
+			}
+			prop.disabled = true;
+		}, x => {
+			$(box).find("input").prop("disabled", false);
+			for (let el in elements) {
+				elements[el][0].MaterialRadio.enable();
+			}
+		});
 	}
 
 
@@ -1120,16 +1232,36 @@ function addTextField(selector, variableType) {
 	var input = $(textField).find("input");
 	var button = $(textField).find(".material-icons");
 
-	input.keypress(function (e) {
-		if (e.which == 13) {
-			remoteme.getVariables().set(prop.name, variableType, [input[0].value]);
-			return false;
-		}
-	});
 
-	button.click(() => {
-		remoteme.getVariables().set(prop.name, variableType, [input[0].value]);
-	});
+	if (!prop.disabled) {
+		button.click(() => {
+			if (!prop.disabled) {
+				remoteme.getVariables().set(prop.name, variableType, [input[0].value]);
+			}
+
+		});
+
+		input.keypress(function (e) {
+			if (!prop.disabled) {
+				if (e.which == 13) {
+					remoteme.getVariables().set(prop.name, variableType, [input[0].value]);
+					return false;
+				}
+			}
+		});
+
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			prop.disabled = true;
+			$(button).css("display", "none");
+
+			$(input).prop("disabled", true);
+		}, x => {
+			prop.disabled = false;
+			$(button).css("display", "block");
+			$(input).prop("disabled", false);
+		});
+
+	}
 
 
 	remoteme.getVariables().observe(prop.name, variableType, x => {
@@ -1214,15 +1346,27 @@ function addJoystick(selector) {
 	var touch = new Touch(selector, xMin, xMax, yMin, yMax, (x, y) => {
 
 		otChange200.executeWithId(prop.name + "SmallInteger2", () => {
-			remoteme.getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
+			if (!prop.disabled) {
+				remoteme.getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
+			}
+
 		});
 
+	});
+
+	RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+		prop.disabled = true;
+		touch.disable(true);
+	}, x => {
+		prop.disabled = false;
+		touch.disable(false);
 	});
 
 }
 
 
-var schedulerUID=0;
+var schedulerUID = 0;
+
 function addVariableSchedulerMultiState(selector) {
 
 	var prop = readProperties(selector);
@@ -1231,39 +1375,42 @@ function addVariableSchedulerMultiState(selector) {
 
 	var toInsert = $(selector).find("variablescheduler");
 
-	let variableSchedulerNames=[];
-	let variableSchedulerIds=[];
+	let variableSchedulerNames = [];
+	let variableSchedulerIds = [];
 	for (let i = 0; i < toInsert.length; i++) {
 		variableSchedulerNames.push($(toInsert[i]).html());
-		variableSchedulerIds.push(parseInt( $(toInsert[i]).attr('value')));
+		variableSchedulerIds.push(parseInt($(toInsert[i]).attr('value')));
 	}
 
 
-	if (variableSchedulerIds.length!=1){
-		let multiTouch = new MultiSwitch(selector,label,variableSchedulerNames,(val)=>{
-			console.info("main change"+val);
+	if (variableSchedulerIds.length != 1) {
+		let multiTouch = new MultiSwitch(selector, label, variableSchedulerNames, (val) => {
+			console.info("main change" + val);
 
-			let temp=[];
-			for(let id of variableSchedulerIds){
-				temp.push({variableSchedulerId:id,state:val});
+			let temp = [];
+			for (let id of variableSchedulerIds) {
+				temp.push({variableSchedulerId: id, state: val});
 			}
 			remoteme.send(getSetVariableSchedulerStateMessage(temp));
 
-		},(id,val)=>{
-			console.info("single change "+id+" "+val);
-			remoteme.send(getSetVariableSchedulerStateMessage([{variableSchedulerId:variableSchedulerIds[id],state:val}]));
+		}, (id, val) => {
+			console.info("single change " + id + " " + val);
+			remoteme.send(getSetVariableSchedulerStateMessage([{
+				variableSchedulerId: variableSchedulerIds[id],
+				state: val
+			}]));
 		});
 		multiTouch.setMain(false);
 
-		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId,state)=>{
+		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId, state) => {
 			let elementPos = variableSchedulerIds.indexOf(variableSchedulerId);
-			if (elementPos!=-1){
-				multiTouch.setSingleElement(elementPos,state);
+			if (elementPos != -1) {
+				multiTouch.setSingleElement(elementPos, state);
 			}
 		});
 
-	}else{
-		let temp="schedulerUID"+(schedulerUID++);
+	} else {
+		let temp = "schedulerUID" + (schedulerUID++);
 
 		checkBoxElement = $(`<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-${temp}">
 			<input type="checkbox" id="switch-${temp}" class="mdl-switch__input" >
@@ -1271,17 +1418,19 @@ function addVariableSchedulerMultiState(selector) {
 			</label>`);
 
 
-
 		let checkbox = checkBoxElement.find("input");
 
 
 		checkbox.change(function () {
-			let stats=!checkBoxElement.is('.is-checked');
-			remoteme.send(getSetVariableSchedulerStateMessage([{variableSchedulerId:variableSchedulerIds[0],state:stats}]));
+			let stats = !checkBoxElement.is('.is-checked');
+			remoteme.send(getSetVariableSchedulerStateMessage([{
+				variableSchedulerId: variableSchedulerIds[0],
+				state: stats
+			}]));
 		});
 
-		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId,state)=>{
-			if (variableSchedulerId==variableSchedulerIds[0]){
+		remoteme.remoteMeConfig.variableSchedulerStateChange.push((variableSchedulerId, state) => {
+			if (variableSchedulerId == variableSchedulerIds[0]) {
 				if (state) {
 					checkBoxElement.get()[0].MaterialSwitch.on();
 				} else {
@@ -1297,10 +1446,7 @@ function addVariableSchedulerMultiState(selector) {
 	}
 
 
-
-
 	remoteme.subscribeEvent(EventSubscriberTypeEnum.VARIABLE_SCHEDULER_STATE);
-
 
 
 }
@@ -1337,17 +1483,25 @@ function addCameraMouseTracking(selector) {
 	let video = $("video");
 	if (video.get(0) != undefined) {
 
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			prop.disabled = true;
+		}, x => {
+			prop.disabled = false;
+		});
+
 		let sendNow = (x, y, onlyDirect) => {
 
-			x = Math.min(1, Math.max(-1, x));
-			y = Math.min(1, Math.max(-1, y));
+			if (!prop.disabled) {
+				x = Math.min(1, Math.max(-1, x));
+				y = Math.min(1, Math.max(-1, y));
 
-			otChange200.executeWithId(prop.name + "SmallInteger2", () => {
-				let xS = Math.round(getProportional(xMin, xMax, x));
-				let yS = Math.round(getProportional(yMin, yMax, y));
-				remoteme.getVariables().setSmallInteger2(prop.name, xS, yS, onlyDirect);
-				console.info(xS + " " + yS);
-			});
+				otChange200.executeWithId(prop.name + "SmallInteger2", () => {
+					let xS = Math.round(getProportional(xMin, xMax, x));
+					let yS = Math.round(getProportional(yMin, yMax, y));
+					remoteme.getVariables().setSmallInteger2(prop.name, xS, yS, onlyDirect);
+					console.info(xS + " " + yS);
+				});
+			}
 
 		};
 
@@ -1408,7 +1562,6 @@ function getOnDeviceConnectionChange(cnt, icon, deviceToWatch) {
 
 	}
 }
-
 
 
 function addDeviceConnectionStatus(selector) {
@@ -1630,6 +1783,7 @@ function getString(elementName, element, defValue) {
 	}
 	return defValue;
 }
+
 function getInteger(elementName, element, defValue) {
 	if (element.attr(elementName) != undefined) {
 		defValue = parseInt($(element).attr(elementName));
@@ -1679,11 +1833,14 @@ function addGyroscope(selector) {
 	let element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" >${prop.label}</button>`);
 
 	let gyroscope = new Gyroscope(xMin, xMax, yMin, yMax, xRange, yRange, xySwap, orientationSupport, (x, y, xN, yN) => {
-		otChange200.execute(() => {
-			element.html(prop.label + " " + nicePrint(xN) + " " + nicePrint(yN));
+		if (!prop.disabled){
+			otChange200.execute(() => {
+				element.html(prop.label + " " + nicePrint(xN) + " " + nicePrint(yN));
 
-			remoteme.getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
-		});
+				remoteme.getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
+			});
+		}
+
 	});
 
 
@@ -1696,6 +1853,17 @@ function addGyroscope(selector) {
 		}
 
 	});
+
+	if (!prop.disabled){
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(element).prop("disabled",true);
+			prop.disabled=true;
+		}, x => {
+			$(element).prop("disabled", false);
+			prop.disabled=false;
+		});
+
+	}
 
 
 	replaceComponent(selector, element);
@@ -1717,8 +1885,6 @@ function replace() {
 	for (let i = 0; i < deviceConnectionStatus.length; i++) {
 		addDeviceConnectionStatus(deviceConnectionStatus[i]);
 	}
-
-
 
 
 	let multiVariableScheduler = $("variableschedulersstate");
@@ -1796,7 +1962,6 @@ function replace() {
 		}
 
 
-
 	}
 	variables = $("variable");
 	for (let i = 0; i < variables.length; i++) {
@@ -1809,7 +1974,7 @@ function replace() {
 
 $(document).ready(function () {
 
-	remoteme=RemoteMe.getInstance();
+	remoteme = RemoteMe.getInstance();
 	remoteme.connectDirectConnection();
 
 	replace();
