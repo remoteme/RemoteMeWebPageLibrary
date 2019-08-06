@@ -666,6 +666,54 @@ function readProperties(selector) {
 
 }
 
+function addPushButton(selector) {
+	var prop = readProperties(selector);
+
+	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" ${prop.disabled ? 'disabled' : ''}>${prop.label}	</button>`);
+
+	remoteme.getVariables().observeBoolean(prop.name, x => {
+		if (x) {
+			$(element).addClass("mdl-button--accent");
+		} else {
+			$(element).removeClass("mdl-button--accent");
+		}
+	});
+
+	if (!prop.disabled) {
+
+
+		let startF=() => {
+			if (!prop.disabled) {
+				$(element).addClass("mdl-button--accent");
+				RemoteMe.getInstance().getVariables().setBoolean(prop.name, true);
+			}
+		};
+
+		let endF=() => {
+			if (!prop.disabled) {
+				$(element).removeClass("mdl-button--accent");
+				RemoteMe.getInstance().getVariables().setBoolean(prop.name, false);
+			}
+		};
+
+		$(element).mousedown(startF);
+		$(element).bind('touchstart',startF);
+		$(element).mouseup(endF);
+		$(element).bind('touchend',endF);
+
+		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
+			$(element).prop("disabled", true);
+		}, x => {
+			$(element).prop("disabled", false);
+		});
+	}
+
+	replaceComponent(selector, element);
+	componentHandler.upgradeElement(element.get()[0]);
+
+
+}
+
 function addButton(selector) {
 	var prop = readProperties(selector);
 
@@ -1901,6 +1949,8 @@ function replace() {
 		variable = variables[i];
 		if ($(variable).attr("type") == "BOOLEAN" && $(variable).attr("component") == "button") {
 			addButton(variable);
+		}if ($(variable).attr("type") == "BOOLEAN" && $(variable).attr("component") == "pushbutton") {
+			addPushButton(variable);
 		} else if ($(variable).attr("type") == "BOOLEAN" && $(variable).attr("component") == "checkbox") {
 			addCheckBox(variable);
 		} else if ($(variable).attr("type") == "BOOLEAN" && $(variable).attr("component") == "switcher") {
