@@ -73,7 +73,7 @@ function updateWebTokenProperties(dataJson){
 
 
 
-	RemoteMe.getInstance().setWebPageTokenProperties(new WebPageTokenProperties(dataJson.deviceSessionId,dataJson.identifier,dataJson.expirationTime,dataJson.credit));
+	RemoteMe.getInstance().setGuestKeyProperties(new GuestKeyProperties(dataJson.deviceSessionId,dataJson.identifier,dataJson.expirationTime,dataJson.credit));
 
 }
 

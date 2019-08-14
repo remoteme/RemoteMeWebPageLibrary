@@ -1,11 +1,11 @@
 VariableOberverType= {BOOLEAN:0,INTEGER:1,TEXT:2,SMALL_INTEGER_3:3,SMALL_INTEGER_2:4,INTEGER_BOOLEAN:5,DOUBLE:6,TEXT_2:7,SMALL_INTEGER_2_TEXT_2:8}
 ChangeMessageSetting={ NO_RENEWAL:0,RENEWAL_IF_FAILED:1}
 
-MessageType = {USER_MESSAGE:100,USER_MESSAGE_WEBPAGE_TOKEN:108,
+MessageType = {USER_MESSAGE:100,USER_MESSAGE_GUEST:108,
 	USER_MESSAGE_DELIVER_STATUS:101,
-	USER_SYNC_MESSAGE:102,USER_SYNC_MESSAGE_WEBPAGE_TOKEN:109,
+	USER_SYNC_MESSAGE:102,USER_SYNC_MESSAGE_GUEST:109,
 	VARIABLE_CHANGE_MESSAGE:103, VARIABLE_CHANGE_PROPAGATE_MESSAGE:104,
-	VARIABLE_CHANGE_PROPAGATE_MESSAGE_WEBPAGE_TOKEN:107,
+	VARIABLE_CHANGE_PROPAGATE_MESSAGE_GUEST:107,
 
 	SEND_PUSH_NOTIFICATION:105,
 	SET_VARIABLE_SCHEDULER_STATE:106,
@@ -297,7 +297,7 @@ function getUserMessage( userMessageSettings, receiverDeviceId,senderDeviceId, m
 }
 
 
-function getUserMessageWebPageToken( userMessageSettings, receiverDeviceId,senderDeviceId, deviceSessionId,credit,time, data) {
+function getUserMessageGuestKey( userMessageSettings, receiverDeviceId,senderDeviceId, deviceSessionId,credit,time, data) {
 
 	data=getArray(data);
 
@@ -307,7 +307,7 @@ function getUserMessageWebPageToken( userMessageSettings, receiverDeviceId,sende
 
 
 
-	ret.putShort(MessageType.USER_MESSAGE_WEBPAGE_TOKEN);
+	ret.putShort(MessageType.USER_MESSAGE_GUEST);
 	ret.putShort(size);
 	ret.putByte(userMessageSettings);
 	ret.putShort(receiverDeviceId);

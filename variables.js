@@ -310,7 +310,7 @@ class Variables {
 			size += current.getSize();
 		}
 		var ret = new RemoteMeData(4 + size);
-		ret.putShort(MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE_WEBPAGE_TOKEN);
+		ret.putShort(MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE_GUEST);
 		ret.putShort(size);
 		ret.putShort(thisDeviceId);
 		ret.putShort(receiveId);
@@ -369,9 +369,9 @@ class Variables {
 
 
 		if (this.remoteMe.isWebRTCConnected()) {
-			if (this.remoteMe._webPageTokenProperties!=undefined){
+			if (this.remoteMe._guestKeyProperties!=undefined){
 				this.remoteMe.sendWebRtc(this._getPropagateMessageWebToken(raspberryPiDeviceId,this.toSend,
-					this.remoteMe._webPageTokenProperties.deviceSessionId,	this.remoteMe._webPageTokenProperties.identifier,this.remoteMe._webPageTokenProperties.getRestTime(),this.remoteMe._webPageTokenProperties.credit));
+					this.remoteMe._guestKeyProperties.deviceSessionId,	this.remoteMe._guestKeyProperties.identifier,this.remoteMe._guestKeyProperties.getRestTime(),this.remoteMe._guestKeyProperties.credit));
 			}else{
 				this.remoteMe.sendWebRtc(this._getPropagateMessage(raspberryPiDeviceId,this.toSend));
 

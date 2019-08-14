@@ -20,7 +20,7 @@ EventSubscriberTypeEnum = {
 	FILE_CHANGE:70
 };
 
-class WebPageTokenProperties{
+class GuestKeyProperties{
 	constructor(deviceSessionId,identifier,expirationTime,credit){
 		this.deviceSessionId=deviceSessionId;
 		this.identifier=identifier;
@@ -160,7 +160,7 @@ class RemoteMe {
 
 		this._componentsDisabled=[];
 
-		this._webPageTokenProperties=undefined;
+		this._guestKeyProperties=undefined;
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
@@ -207,7 +207,7 @@ class RemoteMe {
 		if (credit!= undefined && credit>0){
 			var componentDisabled = new ComponentDisabled(credit,disable,enable);
 			this._componentsDisabled.push(componentDisabled);
-			if (this._webPageTokenProperties != undefined && componentDisabled.getCredit()>this._webPageTokenProperties.credit){
+			if (this._guestKeyProperties != undefined && componentDisabled.getCredit()>this._guestKeyProperties.credit){
 				x.disable();
 			}
 		}
@@ -506,7 +506,7 @@ class RemoteMe {
 			}
 
 
-		}else if (ret.typeId == MessageType.USER_MESSAGE_WEBPAGE_TOKEN) {
+		}else if (ret.typeId == MessageType.USER_MESSAGE_GUEST) {
 			ret.size = data.popInt16();
 			let renevalWhenFailTypeId = data.popByte();
 			let receiveDeviceId = data.popUint16();
@@ -537,7 +537,7 @@ class RemoteMe {
 			this._onUserSyncMessage(senderDeviceId, data, messageId);
 
 
-		}else if (ret.typeId == MessageType.USER_SYNC_MESSAGE_WEBPAGE_TOKEN) {
+		}else if (ret.typeId == MessageType.USER_SYNC_MESSAGE_GUEST) {
 			let size = data.popInt16();
 
 			let receiveDeviceId = data.popUint16();
@@ -575,7 +575,7 @@ class RemoteMe {
 		} else if (ret.typeId == MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE) {
 			this.getVariables()._onObserverPropagateMessage(data);
 
-		}else if (ret.typeId == MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE_WEBPAGE_TOKEN) {
+		}else if (ret.typeId == MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE_GUEST) {
 			this.getVariables()._onObserverPropagateMessageWebToken(data);
 
 		}  else if (ret.typeId == MessageType.VARIABLE_CHANGE_MESSAGE) {
@@ -1099,9 +1099,9 @@ class RemoteMe {
 	}
 
 	sendUserMessageWebrtc(receiveDeviceId, data) {
-		if (this._webPageTokenProperties!=undefined){
-			this.sendWebRtc(getUserMessageWebPageToken(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId,this._webPageTokenProperties.deviceSessionId,
-				this._webPageTokenProperties.identifier,this._webPageTokenProperties.credit,this._webPageTokenProperties.getRestTime(), data));
+		if (this._guestKeyProperties!=undefined){
+			this.sendWebRtc(getUserMessageGuestKey(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId,this._guestKeyProperties.deviceSessionId,
+				this._guestKeyProperties.identifier,this._guestKeyProperties.credit,this._guestKeyProperties.getRestTime(), data));
 		}else{
 			this.sendWebRtc(getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data));
 		}
@@ -1287,17 +1287,17 @@ class RemoteMe {
 		}
 	}
 
-	setWebPageTokenProperties(webPageTokenProperties){
-		this._webPageTokenProperties=webPageTokenProperties;
+	setGuestKeyProperties(guestKeyProperties){
+		this._guestKeyProperties=guestKeyProperties;
 		this._componentsDisabled.forEach(componentDisabled=>{
-			if (this._webPageTokenProperties != undefined && (componentDisabled.getCredit()>this._webPageTokenProperties.credit)){
+			if (this._guestKeyProperties != undefined && (componentDisabled.getCredit()>this._guestKeyProperties.credit)){
 				componentDisabled.disable();
 			}else{
 				componentDisabled.enable();
 			}
 		});
 
-		this.remoteMeConfig.onWebTokenChange.forEach(f => f(webPageTokenProperties));
+		this.remoteMeConfig.onWebTokenChange.forEach(f => f(guestKeyProperties));
 
 
 	}
