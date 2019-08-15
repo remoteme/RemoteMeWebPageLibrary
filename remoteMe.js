@@ -135,7 +135,7 @@ class RemoteMe {
 			remoteVideoElementId: "remoteVideo",
 			onUserMessage: undefined,
 			onUserSyncMessage: undefined,
-			onWebTokenChange:[],
+			onGuestChange:[],
 			pcConfig: {"iceServers": [{"urls": "stun:stun.l.google.com:19302"}]},
 			pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
 			mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}},
@@ -576,7 +576,7 @@ class RemoteMe {
 			this.getVariables()._onObserverPropagateMessage(data);
 
 		}else if (ret.typeId == MessageType.VARIABLE_CHANGE_PROPAGATE_MESSAGE_GUEST) {
-			this.getVariables()._onObserverPropagateMessageWebToken(data);
+			this.getVariables()._onObserverPropagateMessageGuest(data);
 
 		}  else if (ret.typeId == MessageType.VARIABLE_CHANGE_MESSAGE) {
 			this.getVariables()._onObserverChangeMessage(data);
@@ -1297,7 +1297,7 @@ class RemoteMe {
 			}
 		});
 
-		this.remoteMeConfig.onWebTokenChange.forEach(f => f(guestKeyProperties));
+		this.remoteMeConfig.onGuestChange.forEach(f => f(guestKeyProperties));
 
 
 	}

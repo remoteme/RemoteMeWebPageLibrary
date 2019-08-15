@@ -13,7 +13,7 @@ window.onload=function () {
 	webGuestLandingWebSocket = new WebSocket(getWebGuestLandingWebSocketAddress());
 	webGuestLandingWebSocket.binaryType = "arraybuffer";
 	webGuestLandingWebSocket.onmessage = onMessageWebGuestLandingWebSocket;
-	getWebTokenInfo();
+	getGuestAuthentificationInfo();
 
 
 };
@@ -29,13 +29,13 @@ function ping(){
 	xhttp.send();
 }
 
-function getWebTokenInfo(){
-	var url ="/inner/guestLanding/getWebTokenInfo/";
+function getGuestAuthentificationInfo(){
+	var url ="/inner/guestLanding/getGuestAuthentificationInfo/";
 	var xhttp = new XMLHttpRequest();
 
 	xhttp.addEventListener("load", function(){
 		if (this.status==200){
-			updateWebTokenProperties(JSON.parse(this.response));
+			updateGuestProperties(JSON.parse(this.response));
 		}
 	});
 
@@ -64,12 +64,12 @@ function onMessageWebGuestLandingWebSocket(event){
 	if (dataJson.type=="TOKEN_INFO_CHANGE"){
 		dataJson=JSON.parse(dataJson.dataS);
 		console.info(dataJson);
-		updateWebTokenProperties(dataJson);
+		updateGuestProperties(dataJson);
 
 	}
 
 }
-function updateWebTokenProperties(dataJson){
+function updateGuestProperties(dataJson){
 
 
 
