@@ -1,5 +1,5 @@
 
-var webTokenLandingWebSocket;
+var webGuestLandingWebSocket;
 var expirationTime=undefined;
 
 
@@ -10,9 +10,9 @@ window.onload=function () {
 	},1000);
 
 
-	webTokenLandingWebSocket = new WebSocket(getWebTokenLandingWebSocketAddress());
-	webTokenLandingWebSocket.binaryType = "arraybuffer";
-	webTokenLandingWebSocket.onmessage = onMessageWebTokenLandingWebSocket;
+	webGuestLandingWebSocket = new WebSocket(getWebGuestLandingWebSocketAddress());
+	webGuestLandingWebSocket.binaryType = "arraybuffer";
+	webGuestLandingWebSocket.onmessage = onMessageWebGuestLandingWebSocket;
 	getWebTokenInfo();
 
 
@@ -20,7 +20,7 @@ window.onload=function () {
 
 
 function ping(){
-	var url ="/inner/tokenLanding/ping/";
+	var url ="/inner/guestLanding/ping/";
 	var xhttp = new XMLHttpRequest();
 
 
@@ -30,7 +30,7 @@ function ping(){
 }
 
 function getWebTokenInfo(){
-	var url ="/inner/tokenLanding/getWebTokenInfo/";
+	var url ="/inner/guestLanding/getWebTokenInfo/";
 	var xhttp = new XMLHttpRequest();
 
 	xhttp.addEventListener("load", function(){
@@ -47,19 +47,19 @@ function getWebTokenInfo(){
 
 
 
-function getWebTokenLandingWebSocketAddress(){
+function getWebGuestLandingWebSocketAddress(){
 	var ret;
 	if (window.location.protocol == 'https:') {
 		ret = "wss://";
 	} else {
 		ret = "ws://";
 	}
-	ret += window.location.host + "/innerWS/tokenLanding/";
+	ret += window.location.host + "/innerWS/guestLanding/";
 	return ret;
 
 }
 
-function onMessageWebTokenLandingWebSocket(event){
+function onMessageWebGuestLandingWebSocket(event){
 	var dataJson = JSON.parse(event.data);
 	if (dataJson.type=="TOKEN_INFO_CHANGE"){
 		dataJson=JSON.parse(dataJson.dataS);
