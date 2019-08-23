@@ -633,6 +633,40 @@ class MultiSwitch {
 	}
 }
 
+
+function showProgressBarModal(text) {
+	remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
+
+	if (remoteMeLoadingModal==undefined){
+		remoteMeLoadingModal = $(` <dialog class="mdl-dialog" id="remoteMeLoadingModal">
+				<div class="mdl-dialog__content" style="padding:0px;margin:0px">
+				<h6 style="margin-top: 5px;">...</h6>
+				<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+				</div>
+			</dialog>`);
+
+		$("body").append(remoteMeLoadingModal);
+		componentHandler.upgradeDom();
+		remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
+	}
+
+
+	if (! remoteMeLoadingModal.showModal) {
+		dialogPolyfill.registerDialog(remoteMeLoadingModal);
+	}
+	$(remoteMeLoadingModal.querySelector("h6")).html(text);
+	remoteMeLoadingModal.showModal();
+
+
+
+}
+function closeProgressBarModal() {
+	remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
+	if (remoteMeLoadingModal!=undefined){
+		remoteMeLoadingModal.close();
+	}
+}
+
 function readProperties(selector) {
 	var name = $(selector).attr("name");
 	if ($(selector).attr("label") != undefined) {
@@ -1764,51 +1798,31 @@ function addCamera(selector) {
 	let box = $(`<video id="remoteVideo"  muted="muted" autoplay="autoplay" ondblclick="fullscreen(this)" ${style} ${clazz} ></video>`);
 
 	if (showInfo) {
-		let dialog = $(` <dialog class="mdl-dialog" id="WebRTCDialogInfo">
-			
-			<div class="mdl-dialog__content" style="padding:0px;margin:0px">
-			<h6 style="margin-top: 5px;">Allow data collection?</h6>
-			<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
-			</div>
-			<!--<div class="mdl-dialog__actions">
-			  <button type="button" class="mdl-button">Close</button>
-			</div>-->
-		  </dialog>`);
 
-		$("body").append(dialog);
 
 		remoteme.remoteMeConfig.webRtcConnectionChange.push((state) => {
-			if (!dialog.get()[0].showModal) {
-				dialogPolyfill.registerDialog(dialog.get()[0]);
-			}
 
 
 			if (state == ConnectingStatusEnum.CONNECTED) {
-				showModal(dialog);
-				dialog.find("h6").html("View Connected");
+				showProgressBarModal("View Connected");
 				setTimeout(function () {
-					dialog.get()[0].close();
+					closeProgressBarModal();
 				}, 1000);
 			} else if (state == ConnectingStatusEnum.CONNECTING) {
-				showModal(dialog);
-				dialog.find("h6").html("View Connecting");
+				showProgressBarModal("View Connecting");
 			} else if (state == ConnectingStatusEnum.DISCONNECTING) {
-				showModal(dialog);
-				dialog.find("h6").html("View Disconnecting");
+				showProgressBarModal("View Disconnecting");
 			} else if (state == ConnectingStatusEnum.CHECKING) {
-				showModal(dialog);
-				dialog.find("h6").html("View Checking");
+				showProgressBarModal("View Checking");
 			} else if (state == ConnectingStatusEnum.DISCONNECTED) {
-				showModal(dialog);
-				dialog.find("h6").html("View Disconnected");
+				showProgressBarModal("View Disconnected");
 				setTimeout(function () {
-					dialog.get()[0].close();
+					closeProgressBarModal();
 				}, 1500);
 			} else if (state == ConnectingStatusEnum.FAILED) {
-				showModal(dialog);
-				dialog.find("h6").html("View Failed");
+				showProgressBarModal("View Failed");
 				setTimeout(function () {
-					dialog.get()[0].close();
+					closeProgressBarModal();
 				}, 1500);
 			}
 
@@ -1918,11 +1932,7 @@ function addGyroscope(selector) {
 	componentHandler.upgradeElement(element.get()[0]);
 }
 
-function showModal(dialog) {
-	if (!dialog.attr("open")) {
-		dialog.get()[0].showModal();
-	}
-}
+
 
 function replace() {
 	let connectionStatus = $("connectionstatus");
