@@ -635,7 +635,7 @@ class MultiSwitch {
 
 
 
-function showInfoModal(text,icon=undefined,iconColor=undefined) {
+function showInfoModal(text,icon=undefined,iconColor=undefined,hideAfter=undefined) {
 	remoteMeInfoModal= document.querySelector('#remoteMeInfoModal');
 
 	if (remoteMeInfoModal==undefined){
@@ -667,6 +667,14 @@ function showInfoModal(text,icon=undefined,iconColor=undefined) {
 		dialogPolyfill.registerDialog(remoteMeInfoModal);
 	}
 
+
+	if (remoteMeInfoModal.hideTimeOut!=undefined){
+		clearTimeout(remoteMeInfoModal.hideTimeOut);
+		remoteMeInfoModal.hideTimeOut=undefined;
+	}
+	if (hideAfter){
+		remoteMeInfoModal.hideTimeOut=setTimeout(()=>closeInfoModal(), hideAfter*1000);
+	}
 
 	$(remoteMeInfoModal.querySelector("h6")).html(text);
 	if (!$(remoteMeInfoModal)[0].hasAttribute('open')){
