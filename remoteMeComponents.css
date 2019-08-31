@@ -319,3 +319,16 @@
     color:yellow;
 
 }
+
+
+#remoteMeInfoModal .mdl-dialog__content .icon{
+    float:left;
+    width:40px;
+    height:40px;
+    margin-right:10px;
+    font-size: 30pt;
+}
+
+#remoteMeInfoModal .mdl-dialog__content h6{
+    float:left;
+}

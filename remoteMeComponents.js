@@ -634,6 +634,54 @@ class MultiSwitch {
 }
 
 
+
+function showInfoModal(text,icon=undefined,iconColor=undefined) {
+	remoteMeInfoModal= document.querySelector('#remoteMeInfoModal');
+
+	if (remoteMeInfoModal==undefined){
+		remoteMeInfoModal = $(` <dialog class="mdl-dialog" id="remoteMeInfoModal">
+				<div class="mdl-dialog__content" style="padding:0px;margin:0px">
+					<i class="icon"></i><h6 style="margin-top: 5px;">...</h6>
+					<div style="clear: both"></div>
+				</div>
+			</dialog>`);
+
+		$("body").append(remoteMeInfoModal);
+		componentHandler.upgradeDom();
+		remoteMeInfoModal= document.querySelector('#remoteMeInfoModal');
+	}
+
+	if (icon!=undefined){
+		$(remoteMeInfoModal.querySelector(".icon")).attr('class','icon '+icon);
+		$(remoteMeInfoModal.querySelector(".icon")).css("display",'inline');
+		if (iconColor){
+			$(remoteMeInfoModal.querySelector(".icon")).css("color",iconColor);
+		}else{
+			$(remoteMeInfoModal.querySelector(".icon")).css("color","#4c9ad6");
+		}
+	}else{
+		$(remoteMeInfoModal.querySelector(".icon")).css("display","none");
+	}
+
+	if (! remoteMeInfoModal.showModal) {
+		dialogPolyfill.registerDialog(remoteMeInfoModal);
+	}
+
+
+	$(remoteMeInfoModal.querySelector("h6")).html(text);
+	if (!$(remoteMeInfoModal)[0].hasAttribute('open')){
+		remoteMeInfoModal.showModal();
+	}
+
+
+}
+function closeInfoModal() {
+	remoteMeInfoModal= document.querySelector('#remoteMeInfoModal');
+	if (remoteMeInfoModal!=undefined){
+		remoteMeInfoModal.close();
+	}
+}
+
 function showProgressBarModal(text) {
 	remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
 
@@ -656,7 +704,6 @@ function showProgressBarModal(text) {
 	}
 	$(remoteMeLoadingModal.querySelector("h6")).html(text);
 	remoteMeLoadingModal.showModal();
-
 
 
 }
