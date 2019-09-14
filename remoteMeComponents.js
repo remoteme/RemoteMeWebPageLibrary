@@ -659,8 +659,10 @@ function showInfoModal(text,icon=undefined,iconColor=undefined,hideAfter=undefin
 		}else{
 			$(remoteMeInfoModal.querySelector(".icon")).css("color","#4c9ad6");
 		}
+		$(remoteMeInfoModal.querySelector("h6")).css("width","calc(100% - 52px)");
 	}else{
 		$(remoteMeInfoModal.querySelector(".icon")).css("display","none");
+		$(remoteMeInfoModal.querySelector("h6")).css("width","100%");
 	}
 
 	if (! remoteMeInfoModal.showModal) {
