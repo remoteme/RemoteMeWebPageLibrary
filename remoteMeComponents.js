@@ -679,7 +679,7 @@ function showInfoModal(text,icon=undefined,iconColor=undefined,hideAfter=undefin
 	}
 
 	$(remoteMeInfoModal.querySelector("h6")).html(text);
-	if (!$(remoteMeInfoModal)[0].hasAttribute('open')){
+	if (!remoteMeLoadingModal.hasAttribute("open")){
 		remoteMeInfoModal.showModal();
 	}
 
@@ -713,7 +713,9 @@ function showProgressBarModal(text) {
 		dialogPolyfill.registerDialog(remoteMeLoadingModal);
 	}
 	$(remoteMeLoadingModal.querySelector("h6")).html(text);
-	remoteMeLoadingModal.showModal();
+	if (!remoteMeLoadingModal.hasAttribute("open")){
+		remoteMeLoadingModal.showModal();
+	}
 
 
 }
