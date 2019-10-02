@@ -1991,13 +1991,80 @@ function addGyroscope(selector) {
 	componentHandler.upgradeElement(element.get()[0]);
 }
 
+function addGallery(selector) {
 
+
+
+
+	let prop = readProperties(selector);
+
+
+	let mask = getString("mask", $(selector), "");
+	let deviceId = getInteger("deviceId", $(selector), thisDeviceId);
+	let imageWidth = getString("imageWidth", $(selector), "100%");
+	let imageHeight = getString("imageHeight", $(selector), "250px");
+
+
+	let container = $(`<div class="infinitiveScrollContainer"> </div>`);
+
+
+	let count=5;
+
+	container[0].current=-1;
+
+	container[0].append=()=>{
+
+		let url = `/api/rest/v1/file/get/deviceId/${deviceId}/pos/${(container[0].current+1)}/count/${count}/?mask=${encodeURIComponent(mask)}`;
+
+		RemoteMeRest_callRest(url,"GET",data=>{
+			console.info(data);
+			for(file of data){
+				console.info(file);
+				let newElement = $(`<div class='preview' style="background-image:url('/wp/device_${deviceId}/${file.name}');width:${imageWidth};height:${imageHeight}"></div>`);
+				container.append(newElement);
+				container[0].current++;
+			}
+
+			if (data.length==count){
+				container[0].block=false;
+				container[0].check();
+			}
+
+		},error=>{
+
+		});
+
+
+	};
+
+	container[0].check=()=>{
+		if($(window).scrollTop() + $(window).height() >= $(document).height()-100) {
+			if (!container[0].block){
+				container[0].block=true;
+				container[0].append();
+
+			}
+		}
+	};
+	$(window).scroll(function(x){
+		container[0].check();
+	});
+	replaceComponent(selector, container);
+
+
+	container[0].check();
+}
 
 function replace() {
 	let connectionStatus = $("connectionstatus");
 	for (let i = 0; i < connectionStatus.length; i++) {
 		addconnectionStatus(connectionStatus[i]);
 	}
+	let gallery = $("gallery");
+	for (let i = 0; i < gallery.length; i++) {
+		addGallery(gallery[i]);
+	}
+
 	let deviceConnectionStatus = $("deviceconnectionstatus");
 	for (let i = 0; i < deviceConnectionStatus.length; i++) {
 		addDeviceConnectionStatus(deviceConnectionStatus[i]);
