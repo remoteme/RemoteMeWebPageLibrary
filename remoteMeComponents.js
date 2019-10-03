@@ -2004,6 +2004,9 @@ function addGallery(selector) {
 	let imageWidth = getString("imageWidth", $(selector), "100%");
 	let imageHeight = getString("imageHeight", $(selector), "250px");
 
+	let dateFormat = getString("dateFormat", $(selector), "DD.MM.YYYY HH:mm");
+	let displayDate = getBoolean("displayDate", $(selector),false);
+
 
 	let container = $(`<div class="infinitiveScrollContainer"> </div>`);
 
@@ -2016,12 +2019,25 @@ function addGallery(selector) {
 
 		let url = `/api/rest/v1/file/get/deviceId/${deviceId}/pos/${(container[0].current+1)}/count/${count}/?mask=${encodeURIComponent(mask)}`;
 
+		let loading = $(`<div class='galleryLoader  animated infinite pulse' id="#loadingGallery"><i class='material-icons'>autorenew</i><i class="loadingText">Loading</i><i style="clear: both"></i></div>`);
+		container.append(loading);
+		window.scrollTo(0,document.body.scrollHeight);
+
+
 		RemoteMeRest_callRest(url,"GET",data=>{
 			console.info(data);
+			loading.remove();
+
 			for(file of data){
 				console.info(file);
 				let newElement = $(`<div class='preview' style="background-image:url('/wp/device_${deviceId}/${file.name}');width:${imageWidth};height:${imageHeight}"></div>`);
 				container.append(newElement);
+
+				if (displayDate){
+					let date = $(`<div class='created'>${moment(file.createdAt).format(dateFormat) }</div>`);
+					container.append(date);
+				}
+
 				container[0].current++;
 			}
 
