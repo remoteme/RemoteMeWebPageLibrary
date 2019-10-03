@@ -337,9 +337,11 @@
 }
 
 .infinitiveScrollContainer .preview{
-    width:100%;
+    width:200px;
     height:150px;
+    float:left;
     margin-bottom:10px;
+    margin-right:10px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position-x: center;
