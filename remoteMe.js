@@ -65,32 +65,7 @@ class Guard{
 
 }
 
-class ComponentDisabled{
 
-	constructor(credit,disable,enable){
-		this._credit=credit;
-		this._disable=disable;
-		this._enable=enable;
-		this.enabled=true;
-	}
-
-	getCredit(){
-		return this._credit;
-	}
-	enable(){
-		if (!this.enabled){
-			this.enabled=true;
-			this._enable();
-		}
-	}
-
-	disable(){
-		if (this.enabled){
-			this.enabled=false;
-			this._disable();
-		}
-	}
-}
 
 // Class: RemoteMe
 // A Main class to communicate with remoteMe system
@@ -135,7 +110,7 @@ class RemoteMe {
 			remoteVideoElementId: "remoteVideo",
 			onUserMessage: undefined,
 			onUserSyncMessage: undefined,
-			onGuestChange:[],
+
 			pcConfig: {"iceServers": [{"urls": "stun:stun.l.google.com:19302"}]},
 			pcOptions: {optional: [{DtlsSrtpKeyAgreement: true}]},
 			mediaConstraints: {'mandatory': {'OfferToReceiveAudio': true, 'OfferToReceiveVideo': true}},
@@ -157,10 +132,6 @@ class RemoteMe {
 		this.variables = undefined;
 		this._webSocketGuard=new Guard("websocket send",12);
 		this._restGuard=new Guard("rest guard",8);
-
-		this._componentsDisabled=[];
-
-		this._guestKeyProperties=undefined;
 
 		this.remoteMeConfig = remoteMeDefaultConfig;
 		if (config != undefined) {
@@ -191,27 +162,8 @@ class RemoteMe {
 		}.bind(this);
 	}
 
-	/*disableAllComponent(){
-		this._componentsDisabled.forEach(x=>{
-			x.disable();
-		})
-	}
 
-	enableAllComponent(){
-		this._componentsDisabled.forEach(x=>{
-			x.enable();
-		})
-	}*/
 
-	addComponentDisabled(credit,disable,enable){
-		if (credit!= undefined && credit>0){
-			var componentDisabled = new ComponentDisabled(credit,disable,enable);
-			this._componentsDisabled.push(componentDisabled);
-			if (this._guestKeyProperties != undefined && componentDisabled.getCredit()>this._guestKeyProperties.credit){
-				x.disable();
-			}
-		}
-	}
 
 	subscribeEvent(eventId){
 		if (this._subscribedEvents.indexOf(eventId)==-1){
@@ -1099,10 +1051,19 @@ class RemoteMe {
 	}
 
 	sendUserMessageWebrtc(receiveDeviceId, data) {
-		if (this._guestKeyProperties!=undefined){
-			this.sendWebRtc(getUserMessageGuestKey(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId,this._guestKeyProperties.deviceSessionId,
-				this._guestKeyProperties.identifier,this._guestKeyProperties.credit,this._guestKeyProperties.getRestTime(), data));
-		}else{
+		let sent=false;
+		if (GuestController!=undefined){
+			var guestController = GuestController.getInstance();
+			if (guestController._guestKeyProperties!=undefined){
+				this.sendWebRtc(getUserMessageGuestKey(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId,
+					thisDeviceId,guestController._guestKeyProperties.deviceSessionId,
+					guestController._guestKeyProperties.identifier,guestController._guestKeyProperties.credit,
+					guestController._guestKeyProperties.getRestTime(), data));
+				sent=true;
+			}
+		}
+
+		if (!sent) {
 			this.sendWebRtc(getUserMessage(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId, thisDeviceId, 0, data));
 		}
 	}
@@ -1287,20 +1248,7 @@ class RemoteMe {
 		}
 	}
 
-	setGuestKeyProperties(guestKeyProperties){
-		this._guestKeyProperties=guestKeyProperties;
-		this._componentsDisabled.forEach(componentDisabled=>{
-			if (this._guestKeyProperties != undefined && (componentDisabled.getCredit()>this._guestKeyProperties.credit)){
-				componentDisabled.disable();
-			}else{
-				componentDisabled.enable();
-			}
-		});
 
-		this.remoteMeConfig.onGuestChange.forEach(f => f(guestKeyProperties));
-
-
-	}
 }
 
 
