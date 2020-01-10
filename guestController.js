@@ -38,6 +38,26 @@ window.onload=function () {
 
 };
 
+class GuestInfo  {
+
+
+	getRestTime(){
+		return Math.round((this.expirationTime-Date.now())/1000)
+	}
+
+	constructor(fromJson){//GuestInfoDto
+		this.deviceSessionId=fromJson.deviceSessionId;
+		this.credit=fromJson.creditLeft;
+		this.expirationTime=fromJson.expirationTime;
+		this.state=fromJson.state;
+		this.identifier=fromJson.identifier;
+	}
+
+	getRestTime(){
+
+	}
+}
+
 // Class: RemoteMe
 // A Main class to communicate with remoteMe system
 class GuestController {
@@ -51,6 +71,9 @@ class GuestController {
 
 	}
 
+	getInfo(){
+
+	}
 	constructor() {
 		GuestController.thiz = this;
 
@@ -72,7 +95,7 @@ class GuestController {
 
 
 	getGuestAuthentificationInfo(){
-		var url ="/api/rest/v1/guest/getGuestAuthentificationInfo/";
+		var url ="/api/rest/v1/guest/info/";
 		var xhttp = new XMLHttpRequest();
 
 		xhttp.addEventListener("load", function(){

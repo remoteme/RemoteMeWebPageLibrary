@@ -20,19 +20,7 @@ EventSubscriberTypeEnum = {
 	FILE_CHANGE:70
 };
 
-class GuestKeyProperties{
-	constructor(deviceSessionId,identifier,expirationTime,credit){
-		this.deviceSessionId=deviceSessionId;
-		this.identifier=identifier;
-		this.expirationTime=expirationTime;
-		this.credit=credit;
-	}
 
-
-	getRestTime(){
-		return Math.round((this.expirationTime-Date.now())/1000)
-	}
-}
 class Guard{
 	constructor(name,messagesPer3s = 5) {
 		this.messagesPer3s=messagesPer3s;
@@ -1056,9 +1044,9 @@ class RemoteMe {
 			var guestController = GuestController.getInstance();
 			if (guestController._guestKeyProperties!=undefined){
 				this.sendWebRtc(getUserMessageGuestKey(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId,
-					thisDeviceId,guestController._guestKeyProperties.deviceSessionId,
-					guestController._guestKeyProperties.identifier,guestController._guestKeyProperties.credit,
-					guestController._guestKeyProperties.getRestTime(), data));
+					thisDeviceId,guestController.getInfo().deviceSessionId,
+					guestController.getInfo().identifier,guestController.getInfo().credit,
+					guestController.getInfo().getRestTime(), data));
 				sent=true;
 			}
 		}

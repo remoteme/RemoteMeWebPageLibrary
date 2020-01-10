@@ -369,9 +369,15 @@ class Variables {
 
 
 		if (this.remoteMe.isWebRTCConnected()) {
-			if (this.remoteMe._guestKeyProperties!=undefined){
+
+
+			if (GuestController!=undefined){
+
+				var guestController = GuestController.getInstance();
+
 				this.remoteMe.sendWebRtc(this._getPropagateMessageGuest(raspberryPiDeviceId,this.toSend,
-					this.remoteMe._guestKeyProperties.deviceSessionId,	this.remoteMe._guestKeyProperties.identifier,this.remoteMe._guestKeyProperties.getRestTime(),this.remoteMe._guestKeyProperties.credit));
+					guestController.getInfo().deviceSessionId,	guestController.getInfo().identifier,
+					guestController.getInfo().getRestTime(),guestController.getInfo().credit));
 			}else{
 				this.remoteMe.sendWebRtc(this._getPropagateMessage(raspberryPiDeviceId,this.toSend));
 
