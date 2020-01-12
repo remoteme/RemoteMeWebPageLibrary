@@ -33,9 +33,6 @@ class ComponentDisabled{
 
 window.onload=function () {
 	GuestController.getInstance();
-
-
-
 };
 
 class GuestInfo  {
@@ -47,9 +44,9 @@ class GuestInfo  {
 
 	constructor(fromJson){//GuestInfoDto
 		this.deviceSessionId=fromJson.deviceSessionId;
-		this.credit=fromJson.creditLeft;
+		this.credit=fromJson.credit;
 		this.expirationTime=fromJson.expirationTime;
-		this.state=fromJson.state;
+		this.state=fromJson.state;//NO_CREDIT_OR_TIME, INIT, QUEUE, ACTIVE, WEBRTC_TIMEOUT, ERROR_NOPING, USER_EXIT, OWNER_DEACTIVATE;
 		this.identifier=fromJson.identifier;
 	}
 
@@ -71,30 +68,39 @@ class GuestController {
 
 	}
 
-	getInfo(){
 
-	}
 	constructor() {
 		GuestController.thiz = this;
 
-		setInterval(function(){
-			ping();
-		},1000);
+		setInterval(thiz=>{
+			thiz.ping();
+		},1000,this);
 
 
 		this._componentsDisabled=[];
-		this._guestKeyProperties=undefined;
-		this.onGuestChange=[];
+
 
 
 		this.webGuestLandingWebSocket = new WebSocket(this.getWebGuestLandingWebSocketAddress());
 		this.webGuestLandingWebSocket.binaryType = "arraybuffer";
 		this.webGuestLandingWebSocket.onmessage = this.onMessageWebGuestLandingWebSocket;
-		this.getGuestAuthentificationInfo();
+
+
+		this._guestInfoChangeListeners = [];
+		this._guestStateChangeListeners = [];
+
+
+
+		if (guestInfoAtStart == undefined){
+			alert("there is no Guest session opened, To test it open link in anymous mode or diffrent browser. Or there is misisng line in script in html 'var guestInfoAtStart = ####guestInfoInit#;' ");
+			return;
+		}
+		this.updateGuestProperties( guestInfoAtStart) ;
+		console.info(this._guestInfo);
 	}
 
 
-	getGuestAuthentificationInfo(){
+	getGuestInfo(){
 		var url ="/api/rest/v1/guest/info/";
 		var xhttp = new XMLHttpRequest();
 
@@ -142,7 +148,10 @@ class GuestController {
 	}
 
 	updateGuestProperties(dataJson){
-		this.setGuestKeyProperties(new GuestKeyProperties(dataJson.deviceSessionId,dataJson.identifier,dataJson.expirationTime,dataJson.credit));
+		if (typeof dataJson == 'string'){
+			dataJson = JSON.parse(dataJson);
+		}
+		this._guestInfo = new GuestKeyProperties(dataJson.deviceSessionId,dataJson.identifier,dataJson.expirationTime,dataJson.credit);
 	}
 
 
@@ -150,10 +159,18 @@ class GuestController {
 		if (credit!= undefined && credit>0){
 			var componentDisabled = new ComponentDisabled(credit,disable,enable);
 			this._componentsDisabled.push(componentDisabled);
-			if (this._guestKeyProperties != undefined && componentDisabled.getCredit()>this._guestKeyProperties.credit){
+			if ( componentDisabled.getCredit()>this._guestKeyProperties.credit){
 				x.disable();
 			}
 		}
+	}
+
+	getGuestInfo(){
+		let temp = new GuestInfo();
+		for(var k in this._guestInfo){
+			temp[k]=this._guestInfo[k];
+		};
+		return temp;
 	}
 	/*disableAllComponent(){
 		this._componentsDisabled.forEach(x=>{
@@ -167,20 +184,55 @@ class GuestController {
 		})
 	}*/
 
-	setGuestKeyProperties(guestKeyProperties){
-		this._guestKeyProperties=guestKeyProperties;
+
+
+	//------------ events
+	onGuestStateChange(active){
+		if (!active){
+			RemoteMe.getInstance().disconnectWebSocket(true);
+		}else{
+			RemoteMe.getInstance().connectWebSocket(true);
+		}
+		this._guestStateChangeListeners.forEach(f=>f(active));
+	}
+
+	onGuestInfoChange(event){
+		let previous = this._guestInfo.state;
+
+		this._guestInfo = new GuestInfo(event);
+		if (previous!=this._guestInfo.state){
+			if (this._guestInfo.state == 'ACTIVE'){
+				this.onGuestStateChange(true);
+			}else if (previous== 'ACTIVE'){
+				this.onGuestStateChange(false);
+			}
+		}
 		this._componentsDisabled.forEach(componentDisabled=>{
-			if (this._guestKeyProperties != undefined && (componentDisabled.getCredit()>this._guestKeyProperties.credit)){
+			if (this._guestInfo != undefined && (_guestInfo.credit()>componentDisabled.getCredit())){
 				componentDisabled.disable();
 			}else{
 				componentDisabled.enable();
 			}
 		});
 
-		this.remoteMeConfig.onGuestChange.forEach(f => f(guestKeyProperties));
-
-
+		this._guestInfoChangeListeners.forEach(f => f(this._guestInfo));
 	}
+
+	addGuestInfoChangeListener(guestInfo){
+		this._guestInfoChangeListeners.push(guestInfo);
+		let temp = new GuestInfo(event);
+		guestInfo(copy(this._guestInfo));
+	}
+	addGuestStateChangeListener(guestState){
+		this._guestStateChangeListeners.push(guestState);
+		let temp = new GuestInfo(event);
+		guestState(this._guestInfo=='ACTIVE');
+	}
+
+	isActive(){
+		return this._guestInfo.state=='ACTIVE';
+	}
+
 
 }
 

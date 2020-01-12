@@ -133,7 +133,6 @@ class RemoteMe {
 			window.setInterval((function () {
 				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this._reconnectWebSocketAttempts<15){
 					this.connectWebSocket();
-					console.info("attempts  to reconnect websocket "+this._reconnectWebSocketAttempts);
 					this._reconnectWebSocketAttempts++;
 				}
 
@@ -209,37 +208,43 @@ class RemoteMe {
 	_connectWebSocketNow() {
 		this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTING);
 
-		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
-		this.webSocket.binaryType = "arraybuffer";
-		this.webSocket.onopen = ((event) => {
-			this._reconnectWebSocketAttempts=0;
-			this._webSocketGuard.clear();
-			this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
-			if (this.pingWebSocketTimer !== undefined) {
-				window.clearTimeout(this.pingWebSocketTimer);
-			}
-			this.pingWebSocketTimer = setInterval((function () {
-				var ret = new RemoteMeData(4);
-				ret.putShort(0);
-				ret.putShort(0);
+		this.disconnectWebSocket(false);
+
+		if (GuestController== undefined && GuestController.getInstance().isActive()){
+			this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
+			this.webSocket.binaryType = "arraybuffer";
+			this.webSocket.onopen = ((event) => {
+				this._reconnectWebSocketAttempts=0;
 				this._webSocketGuard.clear();
-				this.sendWebSocket(ret.getBufferArray());
-			}).bind(this), 60000);
+				this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
+				if (this.pingWebSocketTimer !== undefined) {
+					window.clearTimeout(this.pingWebSocketTimer);
+				}
+				this.pingWebSocketTimer = setInterval((function () {
+					var ret = new RemoteMeData(4);
+					ret.putShort(0);
+					ret.putShort(0);
+					this._webSocketGuard.clear();
+					this.sendWebSocket(ret.getBufferArray());
+				}).bind(this), 60000);
 
-			if (RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC){
-				RemoteMe.thiz.connectWebRTC();
-			}
-		});
+				if (RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC){
+					RemoteMe.thiz.connectWebRTC();
+				}
+			});
 
-		this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
-		this.webSocket.onclose = ((event) => {
-			this._webSocketGuard.clear();
-			window.clearTimeout(this.pingWebSocketTimer);
-			this.pingWebSocketTimer = undefined;
-			this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
-		});
+			this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
+			this.webSocket.onclose = ((event) => {
+				this._webSocketGuard.clear();
+				window.clearTimeout(this.pingWebSocketTimer);
+				this.pingWebSocketTimer = undefined;
+				this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
+			});
 
-		this.webSocket.onmessage = this._onMessageWS.bind(this);
+			this.webSocket.onmessage = this._onMessageWS.bind(this);
+		}
+
+
 
 	}
 
@@ -1042,7 +1047,7 @@ class RemoteMe {
 		let sent=false;
 		if (GuestController!=undefined){
 			var guestController = GuestController.getInstance();
-			if (guestController._guestKeyProperties!=undefined){
+			if (guestController.getInfo()!=undefined){
 				this.sendWebRtc(getUserMessageGuestKey(WSUserMessageSettings.NO_RENEWAL, receiveDeviceId,
 					thisDeviceId,guestController.getInfo().deviceSessionId,
 					guestController.getInfo().identifier,guestController.getInfo().credit,
@@ -1236,6 +1241,55 @@ class RemoteMe {
 		}
 	}
 
+
+
+	//---------------- EVENTS
+	addGuestInfoChangeListener(onChange){
+		if (GuestController!=undefined){
+			GuestController.getInstance().addGuestStateChangeListener(onChange);
+		}
+	}
+	addGuestStateChangeListener(onChange){
+		if (GuestController!=undefined){
+			GuestController.getInstance().addGuestStateChangeListener(onChange);
+		}
+	}
+
+
+	addVariableBooleanChangeListener(variableName,onChange){
+		this.getVariables().observeBoolean(variableName,onChange);
+	}
+
+	addVariableIntegerChangeListener(variableName,onChange){
+		this.getVariables().observeInteger(variableName,onChange);
+	}
+
+	addVariableTextChangeListener(variableName,onChange){
+		this.getVariables().observeText(variableName,onChange);
+	}
+	addVariableSmallInteger3ChangeListener(variableName,onChange){
+		this.getVariables().observeSmallInteger3(variableName,onChange);
+	}
+
+
+	addVariableSmallInteger2ChangeListener(variableName,onChange){
+		this.getVariables().observeSmallInteger2(variableName,onChange);
+	}
+	addVariableIntegerBooleanChangeListener(variableName,onChange){
+		this.getVariables().observeIntegerBoolean(variableName,onChange);
+	}
+
+	addVariableDoubleChangeListener(variableName,onChange){
+		this.getVariables().observeDouble(variableName,onChange);
+	}
+
+	addVariableText2ChangeListener(variableName,onChange){
+		this.getVariables().observeText2(variableName,onChange);
+	}
+
+	addVariableSmallInteger2Text2ChangeListener(variableName,onChange){
+		this.getVariables().observeSmallInteger2Text2(variableName,onChange);
+	}
 
 }
 
