@@ -234,6 +234,16 @@ class GuestController {
 	}
 
 
+	chargeDebug(time,credit){
+		var url =`/api/rest/v1/guest/chargeDebug/${time}/${credit}/`;
+		var xhttp = new XMLHttpRequest();
+
+
+
+		xhttp.open("POST", url,true);
+
+		xhttp.send();
+	}
 }
 
 
