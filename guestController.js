@@ -95,7 +95,7 @@ class GuestController {
 			alert("there is no Guest session opened, To test it open link in anymous mode or diffrent browser. Or there is misisng line in script in html 'var guestInfoAtStart = ####guestInfoInit#;' ");
 			return;
 		}
-		this.updateGuestProperties( guestInfoAtStart) ;
+		this._guestInfo= guestInfoAtStart ;
 		console.info(this._guestInfo);
 	}
 
@@ -106,7 +106,7 @@ class GuestController {
 
 		xhttp.addEventListener("load", function(){
 			if (this.status==200){
-				this.updateGuestProperties(JSON.parse(this.response));
+				this.updateGuestInfo(JSON.parse(this.response));
 			}
 		});
 
@@ -141,17 +141,45 @@ class GuestController {
 	onMessageWebGuestLandingWebSocket(event){
 		var dataJson = JSON.parse(event.data);
 		if (dataJson.type=="TOKEN_INFO_CHANGE"){
-			dataJson=JSON.parse(dataJson.dataS);
-			GuestController.getInstance().updateGuestProperties(dataJson);
+			let guestInfo=JSON.parse(dataJson.dataS);
+			GuestController.getInstance().updateGuestInfo(guestInfo);
 
 		}
 	}
 
-	updateGuestProperties(dataJson){
+	updateGuestInfo(dataJson){
 		if (typeof dataJson == 'string'){
 			dataJson = JSON.parse(dataJson);
 		}
-		this._guestInfo = new GuestKeyProperties(dataJson.deviceSessionId,dataJson.identifier,dataJson.expirationTime,dataJson.credit);
+		let newOne = new GuestInfo(dataJson);
+
+		let changed = false;
+
+		for(var k in this._guestInfo){
+			if (newOne[k]!=this._guestInfo[k]){
+				changed=true;
+				break;
+			}
+		};
+
+
+
+		if (changed){
+			let previous =this._guestInfo;
+
+			this._guestInfo = newOne;
+			if (previous!=this._guestInfo.state){
+				if (this._guestInfo.state == 'ACTIVE'){
+					this.onGuestStateChange(true);
+				}else if (previous== 'ACTIVE'){
+					this.onGuestStateChange(false);
+				}
+			}
+
+
+			this.onGuestInfoChange();
+		}
+
 	}
 
 
@@ -165,7 +193,7 @@ class GuestController {
 		}
 	}
 
-	getGuestInfo(){
+	getCurrentGuestInfo(){
 		let temp = new GuestInfo();
 		for(var k in this._guestInfo){
 			temp[k]=this._guestInfo[k];
@@ -196,37 +224,28 @@ class GuestController {
 		this._guestStateChangeListeners.forEach(f=>f(active));
 	}
 
-	onGuestInfoChange(event){
-		let previous = this._guestInfo.state;
+	onGuestInfoChange(){
 
-		this._guestInfo = new GuestInfo(event);
-		if (previous!=this._guestInfo.state){
-			if (this._guestInfo.state == 'ACTIVE'){
-				this.onGuestStateChange(true);
-			}else if (previous== 'ACTIVE'){
-				this.onGuestStateChange(false);
-			}
-		}
 		this._componentsDisabled.forEach(componentDisabled=>{
-			if (this._guestInfo != undefined && (_guestInfo.credit()>componentDisabled.getCredit())){
+			if (this._guestInfo != undefined && (this._guestInfo.credit()>componentDisabled.getCredit())){
 				componentDisabled.disable();
 			}else{
 				componentDisabled.enable();
 			}
 		});
 
-		this._guestInfoChangeListeners.forEach(f => f(this._guestInfo));
+		this._guestInfoChangeListeners.forEach(f => f(this.getCurrentGuestInfo()));
 	}
 
 	addGuestInfoChangeListener(guestInfo){
 		this._guestInfoChangeListeners.push(guestInfo);
-		let temp = new GuestInfo(event);
-		guestInfo(copy(this._guestInfo));
+
+		guestInfo(this.getCurrentGuestInfo());
 	}
 	addGuestStateChangeListener(guestState){
 		this._guestStateChangeListeners.push(guestState);
-		let temp = new GuestInfo(event);
-		guestState(this._guestInfo=='ACTIVE');
+
+		guestState(this.isActive());
 	}
 
 	isActive(){
