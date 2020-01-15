@@ -1242,11 +1242,15 @@ class RemoteMe {
 	}
 
 
-
+	turnOffGuestRealoadOnStateChange(){
+		if (GuestController!=undefined){
+			GuestController.getInstance().turnOffGuestRealoadOnStateChange();
+		}
+	}
 	//---------------- EVENTS
 	addGuestInfoChangeListener(onChange){
 		if (GuestController!=undefined){
-			GuestController.getInstance().addGuestStateChangeListener(onChange);
+			GuestController.getInstance().addGuestInfoChangeListener(onChange);
 		}
 	}
 	addGuestStateChangeListener(onChange){

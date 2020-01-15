@@ -30,6 +30,42 @@ class ComponentDisabled{
 }
 
 
+var GuestEventWebsocketEventType ={
+	TOKEN_INFO_CHANGE:"TOKEN_INFO_CHANGE",
+	QUEUE_CHANGE:"QUEUE_CHANGE",
+	TEST_PING:"TEST_PING",//send by webpage in no credit to test connection
+	TEST_PONG:"TEST_PONG",//server send reponse,
+	PING:"PING"
+}
+var GuestState ={
+	NO_CREDIT_OR_TIME:"NO_CREDIT_OR_TIME",
+	INIT:"INIT",
+	QUEUE:"QUEUE",
+	ACTIVE:"ACTIVE",
+	WEBRTC_TIMEOUT:"WEBRTC_TIMEOUT",
+	ERROR_NOPING:"ERROR_NOPING",
+	USER_EXIT:"USER_EXIT",
+	OWNER_DEACTIVATE:"OWNER_DEACTIVATE"
+}
+
+class GuestWebsocketEventDto {
+
+	constructor(fromJson = undefined) {
+		if (fromJson != undefined) {
+			if (typeof fromJson == 'string') {
+				fromJson = JSON.parse(fromJson);
+			}
+
+			this.type = fromJson.type;
+			this.dataI = fromJson.dataI;
+			this.dataI2 = fromJson.dataI2;
+			this.dataB = fromJson.dataB;
+			this.dataS = fromJson.dataS;
+		}
+
+	}
+}
+
 
 window.onload=function () {
 	GuestController.getInstance();
@@ -42,12 +78,19 @@ class GuestInfo  {
 		return Math.round((this.expirationTime-Date.now())/1000)
 	}
 
-	constructor(fromJson){//GuestInfoDto
-		this.deviceSessionId=fromJson.deviceSessionId;
-		this.credit=fromJson.credit;
-		this.expirationTime=fromJson.expirationTime;
-		this.state=fromJson.state;//NO_CREDIT_OR_TIME, INIT, QUEUE, ACTIVE, WEBRTC_TIMEOUT, ERROR_NOPING, USER_EXIT, OWNER_DEACTIVATE;
-		this.identifier=fromJson.identifier;
+	constructor(fromJson=undefined){//GuestInfoDto
+		if (fromJson!=undefined){
+			if (typeof fromJson == 'string'){
+				fromJson = JSON.parse(fromJson);
+			}
+
+			this.deviceSessionId=fromJson.deviceSessionId;
+			this.credit=fromJson.credit;
+			this.expirationTime=fromJson.expirationTime;
+			this.state=fromJson.state;//NO_CREDIT_OR_TIME, INIT, QUEUE, ACTIVE, WEBRTC_TIMEOUT, ERROR_NOPING, USER_EXIT, OWNER_DEACTIVATE;
+			this.identifier=fromJson.identifier;
+		}
+
 	}
 
 	getRestTime(){
@@ -72,19 +115,17 @@ class GuestController {
 	constructor() {
 		GuestController.thiz = this;
 
-		setInterval(thiz=>{
-			thiz.ping();
-		},1000,this);
+
 
 
 		this._componentsDisabled=[];
-
+		this.reloadOnStateChange=true;
 
 
 		this.webGuestLandingWebSocket = new WebSocket(this.getWebGuestLandingWebSocketAddress());
 		this.webGuestLandingWebSocket.binaryType = "arraybuffer";
 		this.webGuestLandingWebSocket.onmessage = this.onMessageWebGuestLandingWebSocket;
-
+		this.webGuestLandingWebSocket.onopen=this.onWebSocketOpen;
 
 		this._guestInfoChangeListeners = [];
 		this._guestStateChangeListeners = [];
@@ -95,8 +136,11 @@ class GuestController {
 			alert("there is no Guest session opened, To test it open link in anymous mode or diffrent browser. Or there is misisng line in script in html 'var guestInfoAtStart = ####guestInfoInit#;' ");
 			return;
 		}
-		this._guestInfo= guestInfoAtStart ;
-		console.info(this._guestInfo);
+		this._guestInfo=new GuestInfo(guestInfoAtStart) ;
+		if (this._guestInfo.state==GuestState.NO_CREDIT_OR_TIME){
+			showProgressBarModal("Checking connection","GuestLoading");
+		}
+
 	}
 
 
@@ -116,16 +160,18 @@ class GuestController {
 	}
 
 	ping(){
-		var url ="/api/rest/v1/guest/ping/";
-		var xhttp = new XMLHttpRequest();
-
-
-		xhttp.open("GET", url,true);
-
-		xhttp.send();
+		let toSend = new GuestWebsocketEventDto();
+		toSend.type=GuestEventWebsocketEventType.PING;
+		console.debug("ping send");
+		this.webGuestLandingWebSocket.send(JSON.stringify(toSend));
 	}
 
-
+	test_ping(){
+		let toSend = new GuestWebsocketEventDto();
+		toSend.type=GuestEventWebsocketEventType.TEST_PING;
+		console.debug("ping send");
+		this.webGuestLandingWebSocket.send(JSON.stringify(toSend));
+	}
 	getWebGuestLandingWebSocketAddress(){
 		var ret;
 		if (window.location.protocol == 'https:') {
@@ -138,19 +184,28 @@ class GuestController {
 
 	}
 
-	onMessageWebGuestLandingWebSocket(event){
-		var dataJson = JSON.parse(event.data);
-		if (dataJson.type=="TOKEN_INFO_CHANGE"){
-			let guestInfo=JSON.parse(dataJson.dataS);
-			GuestController.getInstance().updateGuestInfo(guestInfo);
+	onWebSocketOpen(){
+		var thiz=GuestController.getInstance();
+		setInterval(thiz=>{
+			thiz.ping();
+		},1000,thiz);
 
+		thiz.test_ping();
+	}
+
+	onMessageWebGuestLandingWebSocket(event){
+		let message =new GuestWebsocketEventDto(event.data);
+
+		if (message.type==GuestEventWebsocketEventType.TOKEN_INFO_CHANGE){
+			let guestInfo=JSON.parse(message.dataS);
+			GuestController.getInstance().updateGuestInfo(guestInfo);
+		}else if (message.type == GuestEventWebsocketEventType.TEST_PONG){
+			closeProgressBarModal("GuestLoading");
 		}
 	}
 
 	updateGuestInfo(dataJson){
-		if (typeof dataJson == 'string'){
-			dataJson = JSON.parse(dataJson);
-		}
+
 		let newOne = new GuestInfo(dataJson);
 
 		let changed = false;
@@ -216,12 +271,19 @@ class GuestController {
 
 	//------------ events
 	onGuestStateChange(active){
-		if (!active){
-			RemoteMe.getInstance().disconnectWebSocket(true);
+		if (this.reloadOnStateChange){
+			showProgressBarModal("Reloading");
+			location.reload();
 		}else{
-			RemoteMe.getInstance().connectWebSocket(true);
+			if (!active){
+				RemoteMe.getInstance().disconnectWebSocket(true);
+			}else{
+				RemoteMe.getInstance().connectWebSocket(true);
+			}
+			this._guestStateChangeListeners.forEach(f=>f(active));
 		}
-		this._guestStateChangeListeners.forEach(f=>f(active));
+
+
 	}
 
 	onGuestInfoChange(){
@@ -235,6 +297,10 @@ class GuestController {
 		});
 
 		this._guestInfoChangeListeners.forEach(f => f(this.getCurrentGuestInfo()));
+	}
+
+	turnOffGuestRealoadOnStateChange(){
+		this.reloadOnStateChange=false;
 	}
 
 	addGuestInfoChangeListener(guestInfo){
@@ -255,13 +321,41 @@ class GuestController {
 
 	chargeDebug(time,credit){
 		var url =`/api/rest/v1/guest/chargeDebug/${time}/${credit}/`;
-		var xhttp = new XMLHttpRequest();
 
 
+		$.ajax({
+			type: "POST",
+			dataType: "json",
+			url: url,
 
-		xhttp.open("POST", url,true);
+			success: function(data){
 
-		xhttp.send();
+			},
+			error:function(error){
+				alert("erorr while charging in debug mode. Did You active stripe debug at webpage ?. Then reload session")
+			}
+		});
+
+	}
+
+
+	resetCreditAndTime(time,credit){
+		var url =`/api/rest/v1/guest/resetCreditAndTimeDebug/`;
+
+
+		$.ajax({
+			type: "POST",
+			dataType: "json",
+			url: url,
+
+			success: function(data){
+
+			},
+			error:function(error){
+				alert("erorr while charging in debug mode. Did You active stripe debug at webpage ?. Then reload session")
+			}
+		});
+
 	}
 }
 

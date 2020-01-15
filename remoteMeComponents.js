@@ -692,11 +692,11 @@ function closeInfoModal() {
 	}
 }
 
-function showProgressBarModal(text) {
-	remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
+function showProgressBarModal(text,id="remoteMeLoadingModal") {
+	let remoteMeLoadingModal= document.querySelector('#'+id);
 
 	if (remoteMeLoadingModal==undefined){
-		remoteMeLoadingModal = $(` <dialog class="mdl-dialog" id="remoteMeLoadingModal">
+		remoteMeLoadingModal = $(` <dialog class="mdl-dialog" id="${id}">
 				<div class="mdl-dialog__content" style="padding:0px;margin:0px">
 				<h6 style="margin-top: 5px;">...</h6>
 				<div class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
@@ -705,7 +705,7 @@ function showProgressBarModal(text) {
 
 		$("body").append(remoteMeLoadingModal);
 		componentHandler.upgradeDom();
-		remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
+		remoteMeLoadingModal= document.querySelector('#'+id);
 	}
 
 
@@ -719,8 +719,8 @@ function showProgressBarModal(text) {
 
 
 }
-function closeProgressBarModal() {
-	remoteMeLoadingModal= document.querySelector('#remoteMeLoadingModal');
+function closeProgressBarModal(id="remoteMeLoadingModal") {
+	remoteMeLoadingModal= document.querySelector('#'+id);
 	if (remoteMeLoadingModal!=undefined){
 		remoteMeLoadingModal.close();
 	}
