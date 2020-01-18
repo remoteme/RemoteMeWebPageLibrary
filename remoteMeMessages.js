@@ -26,7 +26,7 @@ MessageType = {USER_MESSAGE:100,USER_MESSAGE_GUEST:108,
 
 WSUserMessageSettings = { NO_RENEWAL: 0, RENEWAL_IF_FAILED: 1};
 AddDataMessageSetting = { NO_ROUND :  0, _1S :  1, _2S :  2, _5S :  3, _10S :  4, _15S :  5, _20S :  6, _30S :  7 };
-DeviceType = { NETWORK: 1, SMARTPHONE: 2, WEBPAGE: 3, JSSCRIPT: 4 };
+DeviceType = { NETWORK: 1, SMARTPHONE: 2, WEBPAGE: 3};
 LogLevel = { INFO :  1, WARN :  2, ERROR :  3 };
 LeafDeviceType = { LD_OTHER :  1, LD_EXTERNAL_SCRIPT :  2 ,LD_SERIAL :  3, LD_NRF24 :  4 , LD_WEB_SOCKET :  5 };
 
