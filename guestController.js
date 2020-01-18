@@ -226,7 +226,7 @@ class GuestController {
 			if (previous!=this._guestInfo.state){
 				if (this._guestInfo.state == 'ACTIVE'){
 					this.onGuestStateChange(true);
-				}else if (previous== 'ACTIVE'){
+				}else if (previous.state== 'ACTIVE'){
 					this.onGuestStateChange(false);
 				}
 			}
