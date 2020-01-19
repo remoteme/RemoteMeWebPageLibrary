@@ -132,11 +132,11 @@ class GuestController {
 
 
 
-		if (guestInfoAtStart == undefined){
-			alert("there is no Guest session opened, To test it open link in anymous mode or diffrent browser. Or there is misisng line in script in html 'var guestInfoAtStart = ####guestInfoInit#;' ");
+		if ((typeof guestInfo == 'undefined') || (guestInfo == undefined)){
+			alert("there is no Guest session opened, To test it open link in anymous mode or diffrent browser. Or there is misisng line in script in html 'var guestInfo = ####guestInfo#;' ");
 			return;
 		}
-		this._guestInfo=new GuestInfo(guestInfoAtStart) ;
+		this._guestInfo=new GuestInfo(guestInfo) ;
 		if (this._guestInfo.state==GuestState.NO_CREDIT_OR_TIME){
 			showProgressBarModal("Checking connection","GuestLoading");
 		}
@@ -223,7 +223,7 @@ class GuestController {
 			let previous =this._guestInfo;
 
 			this._guestInfo = newOne;
-			if (previous!=this._guestInfo.state){
+			if (previous.state!=this._guestInfo.state){
 				if (this._guestInfo.state == 'ACTIVE'){
 					this.onGuestStateChange(true);
 				}else if (previous.state== 'ACTIVE'){
@@ -271,17 +271,14 @@ class GuestController {
 
 	//------------ events
 	onGuestStateChange(active){
-		if (this.reloadOnStateChange){
-			showProgressBarModal("Reloading");
-			location.reload();
+
+		if (!active){
+			RemoteMe.getInstance().disconnectWebSocket(true);
 		}else{
-			if (!active){
-				RemoteMe.getInstance().disconnectWebSocket(true);
-			}else{
-				RemoteMe.getInstance().connectWebSocket(true);
-			}
-			this._guestStateChangeListeners.forEach(f=>f(active));
+			RemoteMe.getInstance().connectWebSocket(true);
 		}
+		this._guestStateChangeListeners.forEach(f=>f(active));
+
 
 
 	}
@@ -295,7 +292,7 @@ class GuestController {
 				componentDisabled.enable();
 			}
 		});
-
+		guestInfo=	this.getCurrentGuestInfo();
 		this._guestInfoChangeListeners.forEach(f => f(this.getCurrentGuestInfo()));
 	}
 
@@ -311,14 +308,27 @@ class GuestController {
 	addGuestStateChangeListener(guestState){
 		this._guestStateChangeListeners.push(guestState);
 
-		guestState(this.isActive());
 	}
 
 	isActive(){
 		return this._guestInfo.state=='ACTIVE';
 	}
 
+	makePayment(stripeId){
 
+		$.ajax({
+			type: "POST",
+			dataType: "json",
+			url: `/api/rest/v1/guest/payment/${stripeId}/`,
+
+			success: function(data){
+				alert(data);
+			},
+			error:function(error){
+				alert("erorr while charging in debug mode. Did You active stripe debug at webpage ?. Then reload session")
+			}
+		});
+	}
 	chargeDebug(time,credit){
 		var url =`/api/rest/v1/guest/chargeDebug/${time}/${credit}/`;
 
