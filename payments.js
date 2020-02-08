@@ -1,26 +1,30 @@
-function validateEmail(email) {
-	var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-	return re.test(email);
-}
+function processAgreeds() {
+	if ($("#agree")[0].checked && $("#agreeUser")[0].checked ) {
 
 
-
-function processAgreeds(){
-
-	if ( validateEmail($("#email").val()) && $("#agree")[0].checked){
-		$("#confirmButton").attr("disabled", false);
-	}else{
-		$("#confirmButton").attr("disabled", true);
+		$("#payment-request-button").css("display", "block");
+		$("#agreeds").css("display", "none");
+	} else {
+		$("#payment-request-button").css("display", "none");
+		$("#agreeds").css("display", "block");
 	}
-
 }
 
-function processEmailAndAgreeds(){
-	$("#agreeds").css("display","none");
-	$("#payment-request-button").css("display","block");
+function showTermAndConditionsUser() {
+	let text=`<iframe src="/g/_terms.html" style="border:none;width:100%;height:400px"></iframe> `;
+	showCustomDialog("termsDialog","User Terms &  Conditions",text,"close");
+}
+function showTermAndConditionsRemoteMe() {
+	let text=`<iframe src="https://remoteme.org/RemoteMeStripeTermsAndConditions.html" style="border:none;width:100%;height:400px"></iframe> `;
+	showCustomDialog("termsDialog","RemoteMe Terms &  Conditions",text,"close");
+	$("#agree")[0].checked=false;
 }
 
-function showPaymentButton(singleStripePayment) {
+
+function closePaymentDialog(){
+	closeCustomDialog("paymentInfo");
+}
+function showPaymentDialog(singleStripePayment) {
 
 	singleStripePayment = JSON.parse(singleStripePayment);
 
@@ -32,51 +36,34 @@ function showPaymentButton(singleStripePayment) {
 		htmlToInsert = template({singleStripePayment: singleStripePayment});
 	}
 
-	let paymentContainerButton = document.querySelector('#paymentContainer');
 
-	if (paymentContainerButton != undefined) {
-		paymentContainerButton.remove();
-	}
-	paymentContainerButton = $(` <dialog class="mdl-dialog" id="paymentContainer">
-				<div class="mdl-dialog__content" style="padding:0px;margin:0px">
-				${htmlToInsert}
-				
+	let text=`${htmlToInsert}
 				<div id="agreeds">
-				 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-					<input class="mdl-textfield__input" type="email" id="email" onkeyup="processAgreeds()">
-					<label class="mdl-textfield__label" for="sample3">Add Your Email (for payment process)</label>
-				  </div>
-				<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="agree">
-				  <input type="checkbox" id="agree" class="mdl-switch__input" onchange="processAgreeds()">
-				  <a href="http:\\google.pl" target="_blank" class="mdl-switch__label">Accept Terms & conditions</a>
-				</label>
-					<button onclick="processEmailAndAgreeds()"  id="confirmButton"
-					 class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" style="margin-top:10px" disabled >Process </button>
-			   
+			
+					<div style="margin-bottom:5px">
+						<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="agree" style="width:48px;padding-left:0px;">
+						  <input type="checkbox" id="agree" class="mdl-switch__input" onchange="processAgreeds()">
+						</label>
+						<div style="display:inline;cursor: pointer;left:0px" onclick="showTermAndConditionsRemoteMe()" target="_blank" class="mdl-switch__label">Accept RemoteMe Terms & conditions</div>
+					</div>
+					<div>
+						<label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="agreeUser"  style="width:48px;padding-left:0px;">
+						  <input type="checkbox" id="agreeUser" class="mdl-switch__input" onchange="processAgreeds()">
+						</label>
+						<div  style="display:inline;cursor: pointer;left:0px"  onclick="showTermAndConditionsUser()" target="_blank" class="mdl-switch__label">Accept User Terms & conditions</div>
+					</div>	 
 				</div>
 			
 				<div id="payment-request-button"style="display: none" >
 					<!-- A Stripe Element will be inserted here. -->
-				</div>
-				 <button onclick="closePaymentButton()" 
-				 class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" style="margin-top:10px;width:100%" >Cancel Payment </button>
-           
-				</div>
-			</dialog>`);
-
-	$("body").append(paymentContainerButton);
-	componentHandler.upgradeDom();
-	paymentContainerButton = document.querySelector('#paymentContainer');
+				</div>`;
 
 
-	if (!paymentContainerButton.showModal) {
-		dialogPolyfill.registerDialog(paymentContainerButton);
-	}
 
-	if (!paymentContainerButton.hasAttribute("open")) {
-		paymentContainerButton.showModal();
+	showCustomDialog("paymentDialog","Payment",text,"cancel Payment",()=>{
 		insertPaymentButton(singleStripePayment);
-	}
+	})	;
+
 
 
 }
@@ -88,7 +75,7 @@ function processPayment() {
 		url: `/api/rest/v1/guest/processPayment/`,
 		success: function (data) {
 			//will be changed by guest state change
-			closePaymentButton();
+			closePaymentDialog();
 		},
 		error: function (error) {
 			alert("error while processing payment")
@@ -96,25 +83,20 @@ function processPayment() {
 	});
 }
 
-function closePaymentButton() {
-	let paymentContainerButton = document.querySelector('#paymentContainer');
-	if (paymentContainerButton != undefined) {
-		paymentContainerButton.close();
-	}
-}
+
 
 function insertPaymentButton(singlePayment) {
 	var stripe = Stripe(stripePublicKey, {
-		stripeAccount: userStripeAccount
+		stripeAccount: stripeUserAccount
 	});
 	var paymentRequest = stripe.paymentRequest({
-		country: 'US',
+		country: stripeUserCountry ,
 		currency: singlePayment.currency.toLowerCase(),
 		total: {
 			label: singlePayment.label,
 			amount: singlePayment.payment * 100,
 		},
-		requestPayerName: false,
+		requestPayerName: true,
 		requestPayerEmail: true,
 	});
 	var elements = stripe.elements();
@@ -122,14 +104,14 @@ function insertPaymentButton(singlePayment) {
 		paymentRequest: paymentRequest,
 	});
 
-// Check the availability of the Payment Request API first.
+
 	paymentRequest.canMakePayment().then(function (result) {
 		if (result) {
 			prButton.mount('#payment-request-button');
 		} else {
 
-			showInfoModal("You cannot make payments. Configure googlePay or Apple pay or add card info to the browser", "fas fa-exclamation-triangle", "#af0600");
-			closePaymentButton();
+		//	showInfoModal("You cannot make payments. Configure googlePay or Apple pay or add card info to the browser", "fas fa-exclamation-triangle", "#af0600");
+		//	closePaymentDialog();
 		}
 	});
 
@@ -138,8 +120,13 @@ function insertPaymentButton(singlePayment) {
 		$.ajax({
 			type: "POST",
 			dataType: "json",
-			data:{email:$("#email").val()},
-			url: `/api/rest/v1/guest/payment/${singlePayment.id}/`,
+			contentType: "application/json",
+			data: JSON.stringify({
+				payerEmail: ev.payerEmail,
+				payerName: ev.payerName,
+				singlePaymentId: singlePayment.id
+			}),
+			url: `/api/rest/v1/guest/payment/`,
 
 			success: function (data) {
 
