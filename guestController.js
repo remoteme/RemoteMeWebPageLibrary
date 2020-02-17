@@ -1,5 +1,5 @@
 
-var webGuestLandingWebSocket;
+var webGuestWebSocket;
 var expirationTime=undefined;
 
 class ComponentDisabled{
@@ -122,10 +122,10 @@ class GuestController {
 		this.reloadOnStateChange=true;
 
 
-		this.webGuestLandingWebSocket = new WebSocket(this.getWebGuestLandingWebSocketAddress());
-		this.webGuestLandingWebSocket.binaryType = "arraybuffer";
-		this.webGuestLandingWebSocket.onmessage = this.onMessageWebGuestLandingWebSocket;
-		this.webGuestLandingWebSocket.onopen=this.onWebSocketOpen;
+		this.webGuestWebSocket = new WebSocket(this.getWebGuestLandingWebSocketAddress());
+		this.webGuestWebSocket.binaryType = "arraybuffer";
+		this.webGuestWebSocket.onmessage = this.onMessageWebGuestLandingWebSocket;
+		this.webGuestWebSocket.onopen=this.onWebSocketOpen;
 
 		this._guestInfoChangeListeners = [];
 		this._guestStateChangeListeners = [];
@@ -163,14 +163,14 @@ class GuestController {
 		let toSend = new GuestWebsocketEventDto();
 		toSend.type=GuestEventWebsocketEventType.PING;
 		console.debug("ping send");
-		this.webGuestLandingWebSocket.send(JSON.stringify(toSend));
+		this.webGuestWebSocket.send(JSON.stringify(toSend));
 	}
 
 	test_ping(){
 		let toSend = new GuestWebsocketEventDto();
 		toSend.type=GuestEventWebsocketEventType.TEST_PING;
 		console.debug("ping send");
-		this.webGuestLandingWebSocket.send(JSON.stringify(toSend));
+		this.webGuestWebSocket.send(JSON.stringify(toSend));
 	}
 	getWebGuestLandingWebSocketAddress(){
 		var ret;
