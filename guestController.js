@@ -238,15 +238,6 @@ class GuestController {
 	}
 
 
-	addComponentDisabled(credit,disable,enable){
-		if (credit!= undefined && credit>0){
-			var componentDisabled = new ComponentDisabled(credit,disable,enable);
-			this._componentsDisabled.push(componentDisabled);
-			if ( componentDisabled.getCredit()>this._guestKeyProperties.credit){
-				x.disable();
-			}
-		}
-	}
 
 	getCurrentGuestInfo(){
 		let temp = new GuestInfo();

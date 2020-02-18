@@ -151,6 +151,15 @@ class RemoteMe {
 
 
 
+	addComponentDisabled(credit,disable,enable){
+		if (credit!= undefined && credit>0){
+			var componentDisabled = new ComponentDisabled(credit,disable,enable);
+			this._componentsDisabled.push(componentDisabled);
+			if (this._guestKeyProperties != undefined && componentDisabled.getCredit()>this._guestKeyProperties.credit){
+				x.disable();
+			}
+		}
+	}
 
 	subscribeEvent(eventId){
 		if (this._subscribedEvents.indexOf(eventId)==-1){
@@ -210,39 +219,37 @@ class RemoteMe {
 
 		this.disconnectWebSocket(false);
 
-		if (GuestController== undefined && GuestController.getInstance().isActive()){
-			this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
-			this.webSocket.binaryType = "arraybuffer";
-			this.webSocket.onopen = ((event) => {
-				this._reconnectWebSocketAttempts=0;
-				this._webSocketGuard.clear();
-				this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
-				if (this.pingWebSocketTimer !== undefined) {
-					window.clearTimeout(this.pingWebSocketTimer);
-				}
-				this.pingWebSocketTimer = setInterval((function () {
-					var ret = new RemoteMeData(4);
-					ret.putShort(0);
-					ret.putShort(0);
-					this._webSocketGuard.clear();
-					this.sendWebSocket(ret.getBufferArray());
-				}).bind(this), 60000);
-
-				if (RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC){
-					RemoteMe.thiz.connectWebRTC();
-				}
-			});
-
-			this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
-			this.webSocket.onclose = ((event) => {
-				this._webSocketGuard.clear();
+		this.webSocket = new WebSocket(RemoteMe.thiz.getWSUrl());
+		this.webSocket.binaryType = "arraybuffer";
+		this.webSocket.onopen = ((event) => {
+			this._reconnectWebSocketAttempts=0;
+			this._webSocketGuard.clear();
+			this.onWebSocketConnectionChange(ConnectingStatusEnum.CONNECTED);
+			if (this.pingWebSocketTimer !== undefined) {
 				window.clearTimeout(this.pingWebSocketTimer);
-				this.pingWebSocketTimer = undefined;
-				this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
-			});
+			}
+			this.pingWebSocketTimer = setInterval((function () {
+				var ret = new RemoteMeData(4);
+				ret.putShort(0);
+				ret.putShort(0);
+				this._webSocketGuard.clear();
+				this.sendWebSocket(ret.getBufferArray());
+			}).bind(this), 60000);
 
-			this.webSocket.onmessage = this._onMessageWS.bind(this);
-		}
+			if (RemoteMe.thiz.remoteMeConfig.automaticallyConnectWebRTC){
+				RemoteMe.thiz.connectWebRTC();
+			}
+		});
+
+		this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
+		this.webSocket.onclose = ((event) => {
+			this._webSocketGuard.clear();
+			window.clearTimeout(this.pingWebSocketTimer);
+			this.pingWebSocketTimer = undefined;
+			this.onWebSocketConnectionChange(ConnectingStatusEnum.DISCONNECTED);
+		});
+
+		this.webSocket.onmessage = this._onMessageWS.bind(this);
 
 
 
