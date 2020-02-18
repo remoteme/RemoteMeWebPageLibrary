@@ -292,7 +292,7 @@ class GuestController {
 				componentDisabled.enable();
 			}
 		});
-		guestInfo=	this.getCurrentGuestInfo();
+
 		this._guestInfoChangeListeners.forEach(f => f(this.getCurrentGuestInfo()));
 	}
 
@@ -345,9 +345,35 @@ class GuestController {
 				alert("erorr while charging in debug mode. Did You active stripe debug at webpage ?. Then reload session")
 			}
 		});
-
 	}
 
+	/*
+		NO_CREDIT_OR_TIME
+		INIT
+		QUEUE
+		ACTIVE
+		WEBRTC_TIMEOUT
+		ERROR_NOPING
+		USER_EXIT
+		OWNER_DEACTIVATE
+	 */
+	setStateDebug(state){
+		var url =`/api/rest/v1/guest/setStateDebug/${state}/`;
+
+
+		$.ajax({
+			type: "POST",
+			dataType: "json",
+			url: url,
+
+			success: function(data){
+
+			},
+			error:function(error){
+				alert("erorr while charging in debug mode. Did You active stripe debug at webpage ?. Then reload session")
+			}
+		});
+	}
 
 	resetCreditAndTime(time,credit){
 		var url =`/api/rest/v1/guest/resetCreditAndTimeDebug/`;
@@ -368,12 +394,4 @@ class GuestController {
 
 	}
 }
-
-
-
-
-
-
-
-
 
