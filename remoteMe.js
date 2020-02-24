@@ -131,7 +131,7 @@ class RemoteMe {
 		if (this.remoteMeConfig.automaticallyConnectWS) {
 			this.connectWebSocket();
 			window.setInterval((function () {
-				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this._reconnectWebSocketAttempts<15){
+				if (!this.isWebSocketConnected() && !this.turnOffWebSocketReconnect && this._reconnectWebSocketAttempts<5){
 					this.connectWebSocket();
 					this._reconnectWebSocketAttempts++;
 				}
@@ -241,7 +241,10 @@ class RemoteMe {
 			}
 		});
 
-		this.webSocket.onerror = (event) => this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
+		this.webSocket.onerror = (event) => {
+			this.onWebSocketConnectionChange(ConnectingStatusEnum.FAILED);
+			this.webSocket.onclose=undefined;//so we dont call it
+		}
 		this.webSocket.onclose = ((event) => {
 			this._webSocketGuard.clear();
 			window.clearTimeout(this.pingWebSocketTimer);

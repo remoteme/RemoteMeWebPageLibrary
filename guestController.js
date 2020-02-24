@@ -162,7 +162,6 @@ class GuestController {
 	ping(){
 		let toSend = new GuestWebsocketEventDto();
 		toSend.type=GuestEventWebsocketEventType.PING;
-		console.debug("ping send");
 		this.webGuestWebSocket.send(JSON.stringify(toSend));
 	}
 
