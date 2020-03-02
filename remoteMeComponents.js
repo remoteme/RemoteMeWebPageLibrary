@@ -46,6 +46,68 @@ $.fn.extend({
 	},
 });
 
+class OperationTimer {
+
+
+	constructor(defaultDelay=150) {
+		this.toExecute = [];
+		this.executeDelay = [];
+		this.timers = [];
+
+		this.defaultDelay = defaultDelay;
+	}
+
+	setDelayForFunction(fun, delay) {
+		this.executeDelay[fun.name] = delay;
+	}
+
+
+	setDefaultDelay(delay) {
+		this.defaultDelay = delay;
+	}
+
+
+
+	execute(fun, ...parameters) {
+		var operationId=fun.name;
+		this.executeWithId(operationId,fun,parameters);
+
+	}
+
+	executeWithId(id,fun, ...parameters) {
+		var operationId=id;
+		if (this.timers[operationId] == undefined) {//for first time we call it immidetly
+			fun.apply(undefined, parameters);
+			this._setTimeout(this, operationId);// we set timepout but nothing to execute
+		} else {
+			this.toExecute[operationId] = {'fun': fun,  'parameters': parameters};
+		}
+	}
+
+	_setTimeout(thiz, operationId) {
+		var delayOfCurrent = thiz.executeDelay[operationId];
+		if (delayOfCurrent == undefined) {
+			delayOfCurrent = thiz.defaultDelay;
+		}
+		thiz.timers[operationId] = setTimeout(thiz._executeNow, delayOfCurrent,thiz, operationId);
+	}
+
+	_executeNow(thiz, operationId) {
+
+		var toExecute = thiz.toExecute[operationId];
+
+		thiz.toExecute[operationId] = undefined;
+
+		if (toExecute != undefined) {
+			toExecute.fun.apply(undefined,toExecute.parameters);
+			thiz._setTimeout(thiz,operationId);
+		} else {
+			thiz.timers[operationId] = undefined;//so we call it again after some time of next execituin
+		}
+	}
+
+}
+
 
 class TwoWayMapper {
 
@@ -673,7 +735,7 @@ function addPushButton(selector) {
 
 	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" ${prop.disabled ? 'disabled' : ''}>${prop.label}	</button>`);
 
-	remoteme.getVariables().observeBoolean(prop.name, x => {
+	RemoteMe.getInstance().getVariables().observeBoolean(prop.name, x => {
 		if (x) {
 			$(element).addClass("mdl-button--accent");
 		} else {
@@ -721,7 +783,7 @@ function addButton(selector) {
 
 	var element = $(`<button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect" ${prop.disabled ? 'disabled' : ''}>${prop.label}	</button>`);
 
-	remoteme.getVariables().observeBoolean(prop.name, x => {
+	RemoteMe.getInstance().getVariables().observeBoolean(prop.name, x => {
 		if (x) {
 			$(element).addClass("mdl-button--accent");
 		} else {
@@ -787,7 +849,7 @@ function addColorChange(selector) {
 	$(dialog.find('.select').get(0)).click(() => {
 		button.children(".color-badge").css("background-color", colorPicker.color.hexString);
 
-		remoteme.getVariables().setSmallInteger3(prop.name, colorPicker.color.rgb.r * mn, colorPicker.color.rgb.g * mn, colorPicker.color.rgb.b * mn);
+		RemoteMe.getInstance().getVariables().setSmallInteger3(prop.name, colorPicker.color.rgb.r * mn, colorPicker.color.rgb.g * mn, colorPicker.color.rgb.b * mn);
 
 		dialog.get()[0].close();
 	});
@@ -823,7 +885,7 @@ function addColorChange(selector) {
 	}
 
 
-	remoteme.getVariables().observeSmallInteger3(prop.name, (r, g, b) => {
+	RemoteMe.getInstance().getVariables().observeSmallInteger3(prop.name, (r, g, b) => {
 		r = Math.round(r / mn);
 		g = Math.round(g / mn);
 		b = Math.round(b / mn);
@@ -888,13 +950,13 @@ function addCheckBox(selector, switchMode = false) {
 		});
 		checkbox.change(function () {
 			if (!prop.disabled) {
-				remoteme.getVariables().setBoolean(prop.name, !checkBoxElement.is('.is-checked'));
+				RemoteMe.getInstance().getVariables().setBoolean(prop.name, !checkBoxElement.is('.is-checked'));
 			}
 		});
 	}
 
 
-	remoteme.getVariables().observeBoolean(prop.name, x => {
+	RemoteMe.getInstance().getVariables().observeBoolean(prop.name, x => {
 		if (switchMode) {
 			if (x) {
 				checkBoxElement.get()[0].MaterialSwitch.on();
@@ -982,21 +1044,21 @@ function addXSliders(selector, count) {
 		if (count == 1) {
 			onChange = (() => {
 				otChange200.execute(() => {
-					remoteme.getVariables().setInteger(prop.name, sliders[0].val(), onlyDirect);
+					RemoteMe.getInstance().getVariables().setInteger(prop.name, sliders[0].val(), onlyDirect);
 				});
 
 			});
 		} else if (count == 2) {
 			onChange = (() => {
 				otChange200.execute(() => {
-					remoteme.getVariables().setSmallInteger2(prop.name, sliders[0].val(), sliders[1].val(), onlyDirect);
+					RemoteMe.getInstance().getVariables().setSmallInteger2(prop.name, sliders[0].val(), sliders[1].val(), onlyDirect);
 				});
 
 			});
 		} else if (count == 3) {
 			onChange = (() => {
 				otChange200.execute(() => {
-					remoteme.getVariables().setSmallInteger3(prop.name, sliders[0].val(), sliders[1].val(), sliders[2].val(), onlyDirect);
+					RemoteMe.getInstance().getVariables().setSmallInteger3(prop.name, sliders[0].val(), sliders[1].val(), sliders[2].val(), onlyDirect);
 				});
 
 			});
@@ -1010,14 +1072,14 @@ function addXSliders(selector, count) {
 
 
 	if (count == 1) {
-		remoteme.getVariables().observeInteger(prop.name, x => {
+		RemoteMe.getInstance().getVariables().observeInteger(prop.name, x => {
 			sliders[0].val(x);
 			if (valueBox) {
 				labels[0].html(x);
 			}
 		});
 	} else if (count == 2) {
-		remoteme.getVariables().observeSmallInteger2(prop.name, (x1, x2) => {
+		RemoteMe.getInstance().getVariables().observeSmallInteger2(prop.name, (x1, x2) => {
 			sliders[0].val(x1);
 			sliders[1].val(x2);
 			if (valueBox) {
@@ -1026,7 +1088,7 @@ function addXSliders(selector, count) {
 			}
 		});
 	} else if (count == 3) {
-		remoteme.getVariables().observeSmallInteger3(prop.name, (x1, x2, x3) => {
+		RemoteMe.getInstance().getVariables().observeSmallInteger3(prop.name, (x1, x2, x3) => {
 			sliders[0].val(x1);
 			sliders[1].val(x2);
 			sliders[2].val(x3);
@@ -1104,7 +1166,7 @@ function addGauge(selector) {
 	}).draw();
 
 
-	remoteme.getVariables().observeInteger(prop.name, x => {
+	RemoteMe.getInstance().getVariables().observeInteger(prop.name, x => {
 		gauge.value = x;
 
 	});
@@ -1134,7 +1196,7 @@ function addList(selector, variableType) {
 	} else {
 		element.get()[0].onChange = (val) => {
 			if (!prop.disabled) {
-				remoteme.getVariables().set(prop.name, variableType, [val]);
+				RemoteMe.getInstance().getVariables().set(prop.name, variableType, [val]);
 			}
 		};
 		RemoteMe.getInstance().addComponentDisabled(prop.minCreditForRental, x => {
@@ -1163,7 +1225,7 @@ function addList(selector, variableType) {
 	element.get()[0].disabled = prop.disabled;
 
 
-	remoteme.getVariables().observe(prop.name, variableType, x => {
+	RemoteMe.getInstance().getVariables().observe(prop.name, variableType, x => {
 		element.get()[0].set(x);
 	});
 
@@ -1203,7 +1265,7 @@ function addRadios(selector, variableType) {
 
 		checkboxZ.change(function (s) {
 			if (!prop.disabled) {
-				remoteme.getVariables().set(prop.name, variableType, [$(s.currentTarget).attr("value")]);
+				RemoteMe.getInstance().getVariables().set(prop.name, variableType, [$(s.currentTarget).attr("value")]);
 			}
 		});
 		box.append(toInsertElement);
@@ -1228,7 +1290,7 @@ function addRadios(selector, variableType) {
 	}
 
 
-	remoteme.getVariables().observe(prop.name, variableType, x => {
+	RemoteMe.getInstance().getVariables().observe(prop.name, variableType, x => {
 		if (elements[x] != undefined) {
 			$(elements[x])[0].MaterialRadio.check();
 		}
@@ -1286,7 +1348,7 @@ function addTextField(selector, variableType) {
 	if (!prop.disabled) {
 		button.click(() => {
 			if (!prop.disabled) {
-				remoteme.getVariables().set(prop.name, variableType, [input[0].value]);
+				RemoteMe.getInstance().getVariables().set(prop.name, variableType, [input[0].value]);
 			}
 
 		});
@@ -1294,7 +1356,7 @@ function addTextField(selector, variableType) {
 		input.keypress(function (e) {
 			if (!prop.disabled) {
 				if (e.which == 13) {
-					remoteme.getVariables().set(prop.name, variableType, [input[0].value]);
+					RemoteMe.getInstance().getVariables().set(prop.name, variableType, [input[0].value]);
 					return false;
 				}
 			}
@@ -1314,7 +1376,7 @@ function addTextField(selector, variableType) {
 	}
 
 
-	remoteme.getVariables().observe(prop.name, variableType, x => {
+	RemoteMe.getInstance().getVariables().observe(prop.name, variableType, x => {
 		input.val(x).parent().addClass('is-focused');
 	});
 
@@ -1343,7 +1405,7 @@ function addDiv(selector, variableType) {
 
 	var div = $(`<div>${text}</div>`);
 
-	remoteme.getVariables().observe(prop.name, variableType, x => {
+	RemoteMe.getInstance().getVariables().observe(prop.name, variableType, x => {
 		var text = template.replace("{value}", x);
 		text = text.replace("{name}", prop.name);
 
@@ -1397,7 +1459,7 @@ function addJoystick(selector) {
 
 		otChange200.executeWithId(prop.name + "SmallInteger2", () => {
 			if (!prop.disabled) {
-				remoteme.getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
+				RemoteMe.getInstance().getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
 			}
 
 		});
@@ -1548,7 +1610,7 @@ function addCameraMouseTracking(selector) {
 				otChange200.executeWithId(prop.name + "SmallInteger2", () => {
 					let xS = Math.round(getProportional(xMin, xMax, x));
 					let yS = Math.round(getProportional(yMin, yMax, y));
-					remoteme.getVariables().setSmallInteger2(prop.name, xS, yS, onlyDirect);
+					RemoteMe.getInstance().getVariables().setSmallInteger2(prop.name, xS, yS, onlyDirect);
 					console.info(xS + " " + yS);
 				});
 			}
@@ -1622,7 +1684,7 @@ function addDeviceConnectionStatus(selector) {
 
 	let icon = $(`<i class='material-icons'>link_off</i>`);
 	let cnt = $(`<div class='disconnected'></div>`);
-	icon.click(remoteme.onOffWebSocket.bind(remoteme));
+	icon.click(remoteme.toggleWebSocket.bind(remoteme));
 	cnt.append(icon);
 	cnt.append($(`<div class='text'>${text}</div>`));
 	box.append(cnt);
@@ -1633,11 +1695,10 @@ function addDeviceConnectionStatus(selector) {
 		});
 
 	} else {
-		remoteme.remoteMeConfig.deviceConnectionChange.push(getOnDeviceConnectionChange(cnt, icon, deviceId));
+		remoteme.addDeviceConnectionChangeListener(getOnDeviceConnectionChange(cnt, icon, deviceId));
 
 	}
 
-	remoteme.subscribeEvent(EventSubscriberTypeEnum.DEVICE_CONNECTION);
 
 
 	replaceComponent(selector, box);
@@ -1685,7 +1746,7 @@ function addconnectionStatus(selector) {
 
 		let icon = $(`<i class='material-icons'>cloud_done</i>`);
 		let cnt = $(`<div class='disconnected'></div>`);
-		icon.click(remoteme.onOffWebSocket.bind(remoteme));
+		icon.click(remoteme.toggleWebSocket.bind(remoteme));
 		cnt.append(icon);
 		box.append(cnt);
 		remoteme.remoteMeConfig.webSocketConnectionChange.push(getOnConnectionChange(cnt, icon));
@@ -1694,7 +1755,7 @@ function addconnectionStatus(selector) {
 	if (directConnection) {
 		let icon = $(`<i class='material-icons'>link</i>`);
 		let cnt = $(`<div class='disconnected'></div>`);
-		icon.click(remoteme.onOffDirectConnection.bind(remoteme));
+		icon.click(remoteme.toggleDirectConnection.bind(remoteme));
 
 		cnt.append(icon);
 		box.append(cnt);
@@ -1705,7 +1766,7 @@ function addconnectionStatus(selector) {
 
 		let icon = $(`<i class='material-icons'>videocam</i>`);
 		let cnt = $(`<div class='disconnected'></div>`);
-		icon.click(remoteme.onOffWebRTC.bind(remoteme));
+		icon.click(remoteme.toggleWebRTC.bind(remoteme));
 
 		cnt.append(icon);
 		box.append(cnt);
@@ -1867,7 +1928,7 @@ function addGyroscope(selector) {
 			otChange200.execute(() => {
 				element.html(prop.label + " " + nicePrint(xN) + " " + nicePrint(yN));
 
-				remoteme.getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
+				RemoteMe.getInstance().getVariables().setSmallInteger2(prop.name, x, y, onlyDirect);
 			});
 		}
 
@@ -2100,8 +2161,7 @@ $(document).ready(function () {
 		};
 		remoteme.sendWebSocket = () => {
 		};
-		remoteme.directWebSocketConnectionConnect = () => {
-		};
+
 		remoteme.connectWebSocket = () => {
 		};
 

@@ -269,7 +269,7 @@ class RemoteMe {
 
 	}
 
-	onOffWebSocket() {
+	toggleWebSocket() {
 		if (this.isWebSocketConnected()) {
 			this.disconnectWebSocket();
 		} else {
@@ -613,7 +613,7 @@ class RemoteMe {
 		this.connectWebRTC();
 	}
 
-	onOffWebRTC() {
+	toggleWebRTC() {
 		this._webSocketGuard.clear();
 		if (this.isWebRTCConnected()) {
 			this.disconnectWebRTC();
@@ -1118,7 +1118,7 @@ class RemoteMe {
 		this.directWebSocket = [];
 	}
 
-	onOffDirectConnection() {
+	toggleDirectConnection() {
 		if (this.directWebSocket.length == 0) {
 			this.connectDirectConnection();
 
@@ -1258,52 +1258,36 @@ class RemoteMe {
 		}
 	}
 	//---------------- EVENTS
-	addGuestInfoChangeListener(onChange){
-		if (GuestController!=undefined){
-			GuestController.getInstance().addGuestInfoChangeListener(onChange);
-		}
+	addWebSocketConnectionChangeListener(onChange){
+		this.remoteMeConfig.webSocketConnectionChange.push(onChange);
 	}
-	addGuestStateChangeListener(onChange){
-		if (GuestController!=undefined){
-			GuestController.getInstance().addGuestStateChangeListener(onChange);
-		}
+
+	addWebRTCConnectionChangeListener(onChange){
+		this.remoteMeConfig.webRtcConnectionChange.push(onChange);
+	}
+
+	addDirectConnectionChangeListener(onChange){
+		this.remoteMeConfig.directConnectionChange.push(onChange);
+	}
+
+	addUserMessageListener(onUserMessage){
+		this.remoteMeConfig.remoteMeConfig.onUserMessage=onUserMessage;
+	}
+	addUserSyncMessageListener(onUserSyncMessage){
+		this.remoteMeConfig.onUserSyncMessage=onUserSyncMessage;
 	}
 
 
-	addVariableBooleanChangeListener(variableName,onChange){
-		this.getVariables().observeBoolean(variableName,onChange);
+	addFileChangeListener(onDevcieFileChange){
+		this.subscribeEvent(EventSubscriberTypeEnum.FILE_CHANGE);
+		this.remoteMeConfig.deviceFileChange.push=onDevcieFileChange;
 	}
 
-	addVariableIntegerChangeListener(variableName,onChange){
-		this.getVariables().observeInteger(variableName,onChange);
+	addDeviceConnectionChangeListener(onDeviceConnectionChange){
+		this.remoteMeConfig.deviceConnectionChange.push(onDeviceConnectionChange);
+		remoteme.subscribeEvent(EventSubscriberTypeEnum.DEVICE_CONNECTION);
 	}
 
-	addVariableTextChangeListener(variableName,onChange){
-		this.getVariables().observeText(variableName,onChange);
-	}
-	addVariableSmallInteger3ChangeListener(variableName,onChange){
-		this.getVariables().observeSmallInteger3(variableName,onChange);
-	}
-
-
-	addVariableSmallInteger2ChangeListener(variableName,onChange){
-		this.getVariables().observeSmallInteger2(variableName,onChange);
-	}
-	addVariableIntegerBooleanChangeListener(variableName,onChange){
-		this.getVariables().observeIntegerBoolean(variableName,onChange);
-	}
-
-	addVariableDoubleChangeListener(variableName,onChange){
-		this.getVariables().observeDouble(variableName,onChange);
-	}
-
-	addVariableText2ChangeListener(variableName,onChange){
-		this.getVariables().observeText2(variableName,onChange);
-	}
-
-	addVariableSmallInteger2Text2ChangeListener(variableName,onChange){
-		this.getVariables().observeSmallInteger2Text2(variableName,onChange);
-	}
 
 }
 
