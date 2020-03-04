@@ -1,5 +1,4 @@
-var id = 0;
-var otChange200 = new OperationTimer(200);
+
 
 
 function getProportional(min, max, x) {
@@ -2412,6 +2411,9 @@ function renderHandlebars(object,elementId='guestInfo'){
 
 	}
 }
+
+var id = 0;
+var otChange200 = new OperationTimer(200);
 //---------------- CUSTOM NAD HELPERS END ------------------------------
 
 
